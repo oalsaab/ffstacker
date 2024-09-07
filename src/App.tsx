@@ -1,125 +1,98 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, createRef } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
-import "/node_modules/react-resizable/css/styles.css";
-import "/node_modules/react-grid-layout/css/styles.css";
-import { Responsive, WidthProvider } from "react-grid-layout";
-import ReactGridLayout from "react-grid-layout";
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
+import "gridstack/dist/gridstack.min.css";
+import { GridStack } from "gridstack";
 
-function App() {
-  //   const [greetMsg, setGreetMsg] = useState("");
-  //   const [name, setName] = useState("");
+// Define the Item component that accepts id as a prop
+interface ItemProps {
+  id: string;
+}
+const Item: React.FC<ItemProps> = ({ id }) => <div>{id}</div>;
 
-  //   Responsive width
-  //   let layouts = {
-  //     lg: [
-  //       { i: "a", x: 0, y: 0, w: 1, h: 1 },
-  //       { i: "b", x: 1, y: 0, w: 1, h: 1 },
-  //       { i: "c", x: 2, y: 0, w: 1, h: 1 },
-  //       { i: "e", x: 3, y: 0, w: 1, h: 1 },
-  //       { i: "f", x: 4, y: 0, w: 1, h: 1 },
-  //       { i: "g", x: 5, y: 0, w: 1, h: 1 },
-  //     ],
-  //     md: [
-  //       { i: "a", x: 0, y: 0, w: 1, h: 1 },
-  //       { i: "b", x: 1, y: 0, w: 1, h: 1 },
-  //       { i: "c", x: 2, y: 0, w: 1, h: 1 },
-  //       { i: "e", x: 3, y: 0, w: 1, h: 1 },
-  //       { i: "f", x: 4, y: 0, w: 1, h: 1 },
-  //       { i: "g", x: 5, y: 0, w: 1, h: 1 },
-  //     ],
-  //     sm: [
-  //       { i: "a", x: 0, y: 0, w: 1, h: 1 },
-  //       { i: "b", x: 1, y: 0, w: 1, h: 1 },
-  //       { i: "c", x: 2, y: 0, w: 1, h: 1 },
-  //       { i: "e", x: 3, y: 0, w: 1, h: 1 },
-  //       { i: "f", x: 4, y: 0, w: 1, h: 1 },
-  //       { i: "g", x: 5, y: 0, w: 1, h: 1 },
-  //     ],
-  //   };
+// ControlledStack props interface
+interface ControlledStackProps {
+  items: Array<{ id: string }>;
+  addItem: () => void;
+}
 
-  //   async function something() {
-  //     let layouts = {
-  //       lg: [{ i: "a", x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4 }],
-  //       md: [{ i: "a", x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4 }],
-  //       sm: [{ i: "a", x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4 }],
-  //     };
-  //   }
+// ControlledStack component
+const ControlledStack: React.FC<ControlledStackProps> = ({
+  items,
+  addItem,
+}) => {
+  const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({});
+  const gridRef = useRef<GridStack | null>(null);
 
-  const layout = [{ i: "b", x: 1, y: 0, w: 3, h: 2 }];
+  // Ensure refs for items are created if they don't exist
+  if (Object.keys(refs.current).length !== items.length) {
+    items.forEach(({ id }) => {
+      refs.current[id] = refs.current[id] || createRef<HTMLDivElement>();
+    });
+  }
+
+  // UseEffect for initializing GridStack and updating widgets
+  useEffect(() => {
+    // Initialize GridStack only once
+    gridRef.current =
+      gridRef.current || GridStack.init({ float: false }, ".controlled");
+
+    const grid = gridRef.current;
+
+    grid.batchUpdate();
+    grid.removeAll(false); // Clear existing widgets
+
+    items.forEach(({ id }) => {
+      if (refs.current[id]?.current) {
+        grid.makeWidget(refs.current[id].current!); // Add new widgets
+      }
+    });
+
+    grid.batchUpdate(false);
+  }, [items]);
 
   return (
-    <ReactGridLayout
-      className="layout"
-      layout={layout}
-      cols={10}
-      rowHeight={30}
-      width={400}
-      compactType={"vertical"}
-      //   measureBeforeMount={true}
-      isResizable={false}
-      onLayoutChange={(layout) => console.log(layout)}
-      //   droppingItem={{ i: "xx", h: 2, w: 2 }}
-    >
-      <div key="1" style={{ backgroundColor: "green" }}>
-        1
+    <div>
+      <button onClick={addItem}>Add new widget</button>
+      <div className="grid-stack controlled">
+        {items.map((item) => (
+          <div
+            ref={refs.current[item.id]}
+            key={item.id}
+            className="grid-stack-item"
+          >
+            <div className="grid-stack-item-content">
+              <Item {...item} />
+            </div>
+          </div>
+        ))}
       </div>
-      <div key="2" style={{ backgroundColor: "green" }}>
-        2
-      </div>
-      <div key="3" style={{ backgroundColor: "green" }}>
-        3
-      </div>
-      <div key="4" style={{ backgroundColor: "green" }}>
-        4
-      </div>
-    </ReactGridLayout>
+    </div>
   );
+};
 
-  //   async function greet() {
-  //     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-  //     setGreetMsg(await invoke("greet", { name }));
-  //   }
+// ControlledExample component
+const ControlledExample: React.FC = () => {
+  const [items, setItems] = useState([{ id: "item-1" }, { id: "item-2" }]);
 
-  //   return (
-  //     <div className="container">
-  //       <h1>Welcome to Tauri!</h1>
+  return (
+    <ControlledStack
+      items={items}
+      addItem={() => setItems([...items, { id: `item-${items.length + 1}` }])}
+    />
+  );
+};
 
-  //       <div className="row">
-  //         <a href="https://vitejs.dev" target="_blank">
-  //           <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-  //         </a>
-  //         <a href="https://tauri.app" target="_blank">
-  //           <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-  //         </a>
-  //         <a href="https://reactjs.org" target="_blank">
-  //           <img src={reactLogo} className="logo react" alt="React logo" />
-  //         </a>
-  //       </div>
-
-  //       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-  //       <form
-  //         className="row"
-  //         onSubmit={(e) => {
-  //           e.preventDefault();
-  //           greet();
-  //         }}
-  //       >
-  //         <input
-  //           id="greet-input"
-  //           onChange={(e) => setName(e.currentTarget.value)}
-  //           placeholder="Enter a name..."
-  //         />
-  //         <button type="submit">Greet</button>
-  //       </form>
-
-  //       <p>{greetMsg}</p>
-  //     </div>
-  //   );
-}
+// App component to be called from Tauri
+const App: React.FC = () => {
+  return (
+    <div>
+      <h1>Stacker</h1>
+      <ControlledExample />
+    </div>
+  );
+};
 
 export default App;
