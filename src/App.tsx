@@ -7,8 +7,15 @@ import {
 } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
-import { RangeSlider } from "@mantine/core";
-import { MantineProvider } from "@mantine/core";
+
+import {
+  MantineProvider,
+  RangeSlider,
+  HoverCard,
+  Button,
+  Text,
+  Group,
+} from "@mantine/core";
 
 import "./App.css";
 import "gridstack/dist/gridstack.min.css";
@@ -86,7 +93,7 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
         {
           float: false,
           disableResize: true,
-          column: 6,
+          column: 4,
           handle: ".drag-header",
         },
         ".controlled"
@@ -153,6 +160,10 @@ interface SliderState {
   values: [number, number];
 }
 
+function valueLabelFormat(value: number) {
+  return new Date(value * 1000).toISOString().slice(11, 19);
+}
+
 // ControlledExample component
 const ControlledExample: React.FC = () => {
   const initialItems = [{ id: "1" }, { id: "2" }];
@@ -190,23 +201,41 @@ const ControlledExample: React.FC = () => {
     }
 
     if (!sliderStates.some((slider) => slider.id === id)) {
-      setSliderStates((prev) => [...prev, { id, values: [0, 1] }]);
+      setSliderStates((prev) => [...prev, { id, values: [0, 100] }]);
     }
 
     setShowSlider((prev) => ({
       ...prev,
       [id]: (
-        <RangeSlider
-          color="red"
-          mt={"xl"}
-          pos={"relative"}
-          minRange={0.2}
-          min={0}
-          max={1}
-          step={0.0005}
-          defaultValue={[0, 1]}
-          onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
-        />
+        <div>
+          <RangeSlider
+            color="red"
+            mt={"xl"}
+            pos={"relative"}
+            minRange={10}
+            min={0}
+            max={100}
+            step={5}
+            label={valueLabelFormat}
+            // defaultValue={[0, 500]}
+            onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
+          />
+          <Group justify="center">
+            <HoverCard width={200} shadow="md">
+              <HoverCard.Target>
+                <Button size="compact-xs" color="pink">
+                  I
+                </Button>
+              </HoverCard.Target>
+              <HoverCard.Dropdown>
+                <Text size="xs" ta="center">
+                  File: abc.mov <br />
+                  Dimensions: 100x100
+                </Text>
+              </HoverCard.Dropdown>
+            </HoverCard>
+          </Group>
+        </div>
       ),
     }));
 
