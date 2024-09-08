@@ -17,17 +17,16 @@ import { GridStack } from "gridstack";
 
 interface ItemProps {
   id: string;
+  showSlider: boolean;
   handleFileUpload: (id: string, file: string | string[]) => void;
 }
 
-const Item: React.FC<ItemProps> = ({ id, handleFileUpload }) => {
-  async function handler(event: React.MouseEvent<HTMLButtonElement>) {
+const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
+  async function handler(_: React.MouseEvent<HTMLButtonElement>) {
     const selected = await open({ multiple: false });
 
     if (selected) {
       handleFileUpload(id, selected);
-
-      (event.target as HTMLButtonElement).style.borderColor = "green";
     }
   }
 
@@ -36,6 +35,7 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload }) => {
       <button className="upload-button" onClick={handler}>
         {id}
       </button>
+      {showSlider && <div>Slider</div>}
     </div>
   );
 };
@@ -44,14 +44,18 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload }) => {
 interface ControlledStackProps {
   items: Array<{ id: string }>;
   mapping: MutableRefObject<{ id: string; filename: string }[]>;
+  showSliders: { [key: string]: boolean };
   addItem: () => void;
   resetItems: () => void;
+  handleFileUpload: (id: string, file: string | string[]) => void;
 }
 
 // ControlledStack component
 const ControlledStack: React.FC<ControlledStackProps> = ({
   items,
   mapping,
+  showSliders,
+  handleFileUpload,
   addItem,
   resetItems,
 }) => {
@@ -102,23 +106,6 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
     }
   };
 
-  const handleFileUpload = (id: string, file: string | string[]) => {
-    if (Array.isArray(file)) {
-      return;
-    }
-
-    const filename = file;
-    const entry = mapping.current.find((map) => map.id === id);
-
-    if (entry) {
-      entry.filename = filename; // Update mapping instead of appending duplicates
-    } else {
-      mapping.current.push({ id, filename });
-    }
-
-    console.log(`File uploaded for item ${id}:`, file);
-  };
-
   return (
     <div className="controlled-container">
       <div className="top-button-container">
@@ -135,7 +122,11 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
             data-id={item.id}
           >
             <div className="grid-stack-item-content">
-              <Item id={item.id} handleFileUpload={handleFileUpload} />
+              <Item
+                id={item.id}
+                handleFileUpload={handleFileUpload}
+                showSlider={showSliders[item.id]}
+              />
             </div>
           </div>
         ))}
@@ -148,6 +139,7 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
 const ControlledExample: React.FC = () => {
   const initialItems = [{ id: "1" }, { id: "2" }];
   const [items, setItems] = useState(initialItems);
+  const [showSliders, setShowSlider] = useState<{ [key: string]: boolean }>({});
 
   const mapping = useRef<{ id: string; filename: string }[]>([]);
 
@@ -158,14 +150,38 @@ const ControlledExample: React.FC = () => {
   const resetItems = () => {
     mapping.current = [];
     setItems(initialItems);
+    setShowSlider({});
+  };
+
+  const handleFileUpload = (id: string, file: string | string[]) => {
+    if (Array.isArray(file)) {
+      return;
+    }
+
+    setShowSlider((prev) => ({ ...prev, [id]: true }));
+
+    // Mapping can also include ranges for each upload?
+
+    const filename = file;
+    const entry = mapping.current.find((map) => map.id === id);
+
+    if (entry) {
+      entry.filename = filename; // Update mapping instead of appending duplicates
+    } else {
+      mapping.current.push({ id, filename });
+    }
+
+    console.log(`File uploaded for item ${id}:`, file);
   };
 
   return (
     <ControlledStack
       items={items}
-      mapping={mapping}
       addItem={addItem}
       resetItems={resetItems}
+      showSliders={showSliders}
+      mapping={mapping}
+      handleFileUpload={handleFileUpload}
     />
   );
 };
