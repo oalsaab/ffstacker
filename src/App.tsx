@@ -7,17 +7,20 @@ import {
 } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
-import "./App.css";
+import { RangeSlider } from "@mantine/core";
+import { MantineProvider } from "@mantine/core";
 
+import "./App.css";
 import "gridstack/dist/gridstack.min.css";
 import "gridstack/dist/gridstack-extra.min.css";
+import "@mantine/core/styles.css";
 import { GridStack } from "gridstack";
 
 // Define the Item component that accepts id as a prop
 
 interface ItemProps {
   id: string;
-  showSlider: boolean;
+  showSlider: JSX.Element;
   handleFileUpload: (id: string, file: string | string[]) => void;
 }
 
@@ -32,10 +35,15 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
 
   return (
     <div className="grid-content">
-      <button className="upload-button" onClick={handler}>
-        {id}
-      </button>
-      {showSlider && <div>Slider</div>}
+      <div className="drag-header">Drag</div>
+      <div className="item-button">
+        <button className="upload-button" onClick={handler}>
+          {id}
+        </button>
+      </div>
+      <MantineProvider>
+        <div className="slider">{showSlider}</div>
+      </MantineProvider>
     </div>
   );
 };
@@ -44,7 +52,7 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
 interface ControlledStackProps {
   items: Array<{ id: string }>;
   mapping: MutableRefObject<{ id: string; filename: string }[]>;
-  showSliders: { [key: string]: boolean };
+  showSliders: { [key: string]: JSX.Element };
   addItem: () => void;
   resetItems: () => void;
   handleFileUpload: (id: string, file: string | string[]) => void;
@@ -75,7 +83,12 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
     gridRef.current =
       gridRef.current ||
       GridStack.init(
-        { float: false, disableResize: true, column: 6 },
+        {
+          float: false,
+          disableResize: true,
+          column: 6,
+          handle: ".drag-header",
+        },
         ".controlled"
       );
 
@@ -135,11 +148,20 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
   );
 };
 
+interface SliderState {
+  id: string;
+  values: [number, number];
+}
+
 // ControlledExample component
 const ControlledExample: React.FC = () => {
   const initialItems = [{ id: "1" }, { id: "2" }];
   const [items, setItems] = useState(initialItems);
-  const [showSliders, setShowSlider] = useState<{ [key: string]: boolean }>({});
+  const [sliderStates, setSliderStates] = useState<SliderState[]>([]);
+
+  const [showSliders, setShowSlider] = useState<{ [key: string]: JSX.Element }>(
+    {}
+  );
 
   const mapping = useRef<{ id: string; filename: string }[]>([]);
 
@@ -151,6 +173,15 @@ const ControlledExample: React.FC = () => {
     mapping.current = [];
     setItems(initialItems);
     setShowSlider({});
+    setSliderStates([]);
+  };
+
+  const handleSliderChangeEnd = (id: string, value: [number, number]) => {
+    setSliderStates((prevStates) =>
+      prevStates.map((slider) =>
+        slider.id === id ? { ...slider, values: value } : slider
+      )
+    );
   };
 
   const handleFileUpload = (id: string, file: string | string[]) => {
@@ -158,15 +189,32 @@ const ControlledExample: React.FC = () => {
       return;
     }
 
-    setShowSlider((prev) => ({ ...prev, [id]: true }));
+    if (!sliderStates.some((slider) => slider.id === id)) {
+      setSliderStates((prev) => [...prev, { id, values: [0, 1] }]);
+    }
 
-    // Mapping can also include ranges for each upload?
+    setShowSlider((prev) => ({
+      ...prev,
+      [id]: (
+        <RangeSlider
+          color="red"
+          mt={"xl"}
+          pos={"relative"}
+          minRange={0.2}
+          min={0}
+          max={1}
+          step={0.0005}
+          defaultValue={[0, 1]}
+          onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
+        />
+      ),
+    }));
 
     const filename = file;
     const entry = mapping.current.find((map) => map.id === id);
 
     if (entry) {
-      entry.filename = filename; // Update mapping instead of appending duplicates
+      entry.filename = filename;
     } else {
       mapping.current.push({ id, filename });
     }
