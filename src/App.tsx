@@ -122,6 +122,7 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
       //   Pass in mapping
       let r = await invoke("process_stack", { stack: layout });
       console.log(r);
+      console.log("The mapping:");
       console.log(mapping.current);
     }
   };
@@ -155,9 +156,15 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
   );
 };
 
-interface SliderState {
+interface SliderValues {
   id: string;
   values: [number, number];
+}
+
+interface Probed {
+  filename: string;
+  dimensions: string;
+  duration: number;
 }
 
 function valueLabelFormat(value: number) {
@@ -168,7 +175,7 @@ function valueLabelFormat(value: number) {
 const ControlledExample: React.FC = () => {
   const initialItems = [{ id: "1" }, { id: "2" }];
   const [items, setItems] = useState(initialItems);
-  const [sliderStates, setSliderStates] = useState<SliderState[]>([]);
+  const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
 
   const [showSliders, setShowSlider] = useState<{ [key: string]: JSX.Element }>(
     {}
@@ -184,24 +191,35 @@ const ControlledExample: React.FC = () => {
     mapping.current = [];
     setItems(initialItems);
     setShowSlider({});
-    setSliderStates([]);
+    setSliderValue([]);
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
-    setSliderStates((prevStates) =>
-      prevStates.map((slider) =>
+    setSliderValue((prevValues) =>
+      prevValues.map((slider) =>
         slider.id === id ? { ...slider, values: value } : slider
       )
     );
   };
 
-  const handleFileUpload = (id: string, file: string | string[]) => {
+  const handleFileUpload = async (id: string, file: string | string[]) => {
     if (Array.isArray(file)) {
       return;
     }
 
-    if (!sliderStates.some((slider) => slider.id === id)) {
-      setSliderStates((prev) => [...prev, { id, values: [0, 100] }]);
+    const filename = file;
+    const entry = mapping.current.find((map) => map.id === id);
+
+    if (entry) {
+      entry.filename = filename;
+    } else {
+      mapping.current.push({ id, filename });
+    }
+
+    let probed: Probed = await invoke("probe", { filename: filename });
+
+    if (!sliderValues.some((slider) => slider.id === id)) {
+      setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
     }
 
     setShowSlider((prev) => ({
@@ -214,10 +232,9 @@ const ControlledExample: React.FC = () => {
             pos={"relative"}
             minRange={10}
             min={0}
-            max={100}
+            max={probed.duration}
             step={5}
             label={valueLabelFormat}
-            // defaultValue={[0, 500]}
             onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
           />
           <Group justify="center">
@@ -229,8 +246,8 @@ const ControlledExample: React.FC = () => {
               </HoverCard.Target>
               <HoverCard.Dropdown>
                 <Text size="xs" ta="center">
-                  File: abc.mov <br />
-                  Dimensions: 100x100
+                  File: {probed.filename} <br />
+                  Dimensions: {probed.dimensions}
                 </Text>
               </HoverCard.Dropdown>
             </HoverCard>
@@ -238,17 +255,6 @@ const ControlledExample: React.FC = () => {
         </div>
       ),
     }));
-
-    const filename = file;
-    const entry = mapping.current.find((map) => map.id === id);
-
-    if (entry) {
-      entry.filename = filename;
-    } else {
-      mapping.current.push({ id, filename });
-    }
-
-    console.log(`File uploaded for item ${id}:`, file);
   };
 
   return (
