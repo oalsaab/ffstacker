@@ -4,17 +4,20 @@ import {
   useRef,
   createRef,
   MutableRefObject,
+  RefObject,
+  MouseEvent,
 } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 
 import {
-  MantineProvider,
   RangeSlider,
   HoverCard,
   Button,
+  Stack,
   Text,
   Group,
+  ActionIcon,
 } from "@mantine/core";
 
 import "./App.css";
@@ -22,6 +25,13 @@ import "gridstack/dist/gridstack.min.css";
 import "gridstack/dist/gridstack-extra.min.css";
 import "@mantine/core/styles.css";
 import { GridStack } from "gridstack";
+import {
+  IconUpload,
+  IconInfoCircle,
+  IconArrowsMove,
+  IconCirclePlus,
+  IconReload,
+} from "@tabler/icons-react";
 
 // Define the Item component that accepts id as a prop
 
@@ -32,7 +42,7 @@ interface ItemProps {
 }
 
 const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
-  async function handler(_: React.MouseEvent<HTMLButtonElement>) {
+  async function handler(_: MouseEvent<HTMLButtonElement>) {
     const selected = await open({ multiple: false });
 
     if (selected) {
@@ -42,15 +52,21 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
 
   return (
     <div className="grid-content">
-      <div className="drag-header">Drag</div>
-      <div className="item-button">
-        <button className="upload-button" onClick={handler}>
-          {id}
-        </button>
-      </div>
-      <MantineProvider>
+      <Stack justify="center" gap="md">
+        <ActionIcon variant="outline" color="red">
+          <IconArrowsMove
+            style={{ width: "70%", height: "70%" }}
+            stroke={1.5}
+            className="drag-header"
+          ></IconArrowsMove>
+        </ActionIcon>
+        <Group justify="center">
+          <ActionIcon variant="outline" color="pink" onClick={handler}>
+            <IconUpload style={{ width: "70%", height: "70%" }} stroke={1.5} />
+          </ActionIcon>
+        </Group>
         <div className="slider">{showSlider}</div>
-      </MantineProvider>
+      </Stack>
     </div>
   );
 };
@@ -76,7 +92,7 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
   addItem,
   resetItems,
 }) => {
-  const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({});
+  const refs = useRef<{ [key: string]: RefObject<HTMLDivElement> }>({});
   const gridRef = useRef<GridStack | null>(null);
 
   // Ensure refs for items are created if they don't exist
@@ -138,11 +154,27 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
 
   return (
     <div className="controlled-container">
-      <div className="top-button-container">
-        <button onClick={addItem}>Add</button>
-        <button onClick={resetItems}>Reset</button>
-        <button onClick={processStack}>Process</button>
-      </div>
+      <Group justify="center">
+        <Button
+          variant="outline"
+          color="cyan"
+          rightSection={<IconCirclePlus />}
+          onClick={addItem}
+        >
+          Add
+        </Button>
+        <Button variant="outline" color="cyan" onClick={processStack}>
+          Process
+        </Button>
+        <Button
+          variant="outline"
+          color="cyan"
+          rightSection={<IconReload />}
+          onClick={resetItems}
+        >
+          Reset
+        </Button>
+      </Group>
       <div className="grid-container grid-stack controlled">
         {items.map((item) => (
           <div
@@ -234,7 +266,7 @@ const ControlledExample: React.FC = () => {
     setShowSlider((prev) => ({
       ...prev,
       [id]: (
-        <div>
+        <Stack>
           <RangeSlider
             color="red"
             mt={"xl"}
@@ -249,9 +281,13 @@ const ControlledExample: React.FC = () => {
           <Group justify="center">
             <HoverCard width={200} shadow="md">
               <HoverCard.Target>
-                <Button size="compact-xs" color="pink">
-                  I
-                </Button>
+                <ActionIcon
+                  variant="transparent"
+                  size="compact-xs"
+                  color="pink"
+                >
+                  <IconInfoCircle />
+                </ActionIcon>
               </HoverCard.Target>
               <HoverCard.Dropdown>
                 <Text size="xs" ta="center">
@@ -261,7 +297,7 @@ const ControlledExample: React.FC = () => {
               </HoverCard.Dropdown>
             </HoverCard>
           </Group>
-        </div>
+        </Stack>
       ),
     }));
   };
