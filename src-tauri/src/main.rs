@@ -18,22 +18,51 @@ struct Probed {
     duration: u32,
 }
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn process_stack(stack: Vec<Item>) -> String {
-    let item = stack.first();
+#[derive(Serialize, Deserialize, Clone)]
+struct Input {
+    id: String,
+    path: String,
+}
 
-    let result = match item {
-        Some(item) => item.id.clone(),
-        None => String::from("No value!"),
-    };
-
-    format!("From rust, first ID: {}", result)
+#[derive(Serialize, Deserialize, Clone)]
+struct Slider {
+    id: String,
+    values: [u32; 2],
 }
 
 #[tauri::command]
-fn probe(filename: String) -> Probed {
-    println!("Filename received: {}", filename);
+fn process_stack(stack: Vec<Item>, inputs: Vec<Input>, sliders: Vec<Slider>) -> String {
+    let item = stack.first();
+    let input = inputs.first();
+    let slider = sliders.first();
+
+    let id_value = match item {
+        Some(item) => item.id.clone(),
+        None => String::from("No ID value!"),
+    };
+
+    let input_value = match input {
+        Some(input) => input.path.clone(),
+        None => String::from("No input path!"),
+    };
+
+    let slider_value = match slider {
+        Some(slider) => {
+            let [start, end] = slider.values;
+            format!("Start: {} | End: {}", start, end)
+        }
+        None => String::from("No slider values!"),
+    };
+
+    format!(
+        "From rust, first ID: {} | Input value path: {} | Slider Values: {}",
+        id_value, input_value, slider_value
+    )
+}
+
+#[tauri::command]
+fn probe(input: String) -> Probed {
+    println!("Input received: {}", input);
 
     Probed {
         filename: "beef.mov".into(),

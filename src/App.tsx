@@ -58,8 +58,9 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
 // ControlledStack props interface
 interface ControlledStackProps {
   items: Array<{ id: string }>;
-  mapping: MutableRefObject<{ id: string; filename: string }[]>;
+  inputs: MutableRefObject<{ id: string; path: string }[]>;
   showSliders: { [key: string]: JSX.Element };
+  sliderValues: SliderValues[];
   addItem: () => void;
   resetItems: () => void;
   handleFileUpload: (id: string, file: string | string[]) => void;
@@ -68,8 +69,9 @@ interface ControlledStackProps {
 // ControlledStack component
 const ControlledStack: React.FC<ControlledStackProps> = ({
   items,
-  mapping,
+  inputs,
   showSliders,
+  sliderValues,
   handleFileUpload,
   addItem,
   resetItems,
@@ -119,11 +121,18 @@ const ControlledStack: React.FC<ControlledStackProps> = ({
 
     if (layout) {
       console.log(layout);
-      //   Pass in mapping
-      let r = await invoke("process_stack", { stack: layout });
+
+      let r = await invoke("process_stack", {
+        stack: layout,
+        inputs: inputs.current,
+        sliders: sliderValues,
+      });
+
       console.log(r);
+
       console.log("The mapping:");
-      console.log(mapping.current);
+
+      console.log(inputs.current);
     }
   };
 
@@ -181,14 +190,14 @@ const ControlledExample: React.FC = () => {
     {}
   );
 
-  const mapping = useRef<{ id: string; filename: string }[]>([]);
+  const inputs = useRef<{ id: string; path: string }[]>([]);
 
   const addItem = () => {
     setItems([...items, { id: `${items.length + 1}` }]);
   };
 
   const resetItems = () => {
-    mapping.current = [];
+    inputs.current = [];
     setItems(initialItems);
     setShowSlider({});
     setSliderValue([]);
@@ -207,16 +216,16 @@ const ControlledExample: React.FC = () => {
       return;
     }
 
-    const filename = file;
-    const entry = mapping.current.find((map) => map.id === id);
+    const path = file;
+    const entry = inputs.current.find((input) => input.id === id);
 
     if (entry) {
-      entry.filename = filename;
+      entry.path = path;
     } else {
-      mapping.current.push({ id, filename });
+      inputs.current.push({ id, path });
     }
 
-    let probed: Probed = await invoke("probe", { filename: filename });
+    let probed: Probed = await invoke("probe", { input: path });
 
     if (!sliderValues.some((slider) => slider.id === id)) {
       setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
@@ -263,7 +272,8 @@ const ControlledExample: React.FC = () => {
       addItem={addItem}
       resetItems={resetItems}
       showSliders={showSliders}
-      mapping={mapping}
+      sliderValues={sliderValues}
+      inputs={inputs}
       handleFileUpload={handleFileUpload}
     />
   );
