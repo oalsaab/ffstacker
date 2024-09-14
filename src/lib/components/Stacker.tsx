@@ -35,7 +35,6 @@ const Stacker: React.FC<StackerProps> = ({
           disableResize: true,
           column: 4,
           handle: ".drag-header",
-          removable: true,
         },
         ".controlled"
       );
@@ -59,9 +58,9 @@ const Stacker: React.FC<StackerProps> = ({
     const layout = gridRef.current?.save();
 
     if (layout) {
-      let result = await invoke("process_stack", {
-        stack: layout,
-        inputs: inputs.current,
+      let result = await invoke("process", {
+        positions: layout,
+        sources: inputs.current,
         sliders: sliderValues,
       });
     }
