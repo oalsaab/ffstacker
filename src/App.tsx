@@ -66,9 +66,7 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
-    if (!sliderValues.some((slider) => slider.id === id)) {
-      setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
-    }
+    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
 
     setShowSlider((prev) => ({
       ...prev,
