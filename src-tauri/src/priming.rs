@@ -1,30 +1,5 @@
 use core::fmt;
 
-pub trait StackIdentity {
-    fn identify(&self) -> Stack;
-}
-
-impl StackIdentity for Vec<Primed> {
-    fn identify(&self) -> Stack {
-        if self.iter().all(|item| item.x == 0) {
-            return Stack::Vertical;
-        }
-
-        if self.iter().all(|item| item.y == 0) {
-            return Stack::Horizontal;
-        }
-
-        Stack::X
-    }
-}
-
-#[derive(Debug)]
-pub enum Stack {
-    X,
-    Horizontal,
-    Vertical,
-}
-
 #[derive(Default)]
 pub struct Primed {
     pub id: String,

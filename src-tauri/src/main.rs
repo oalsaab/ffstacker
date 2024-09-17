@@ -4,11 +4,12 @@
 mod grouping;
 mod priming;
 mod probing;
+mod stacking;
 
 use grouping::Group;
 use probing::Probed;
 
-use crate::priming::StackIdentity;
+use crate::stacking::StackIdentity;
 
 // enum Process {
 //     InProgress,
