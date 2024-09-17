@@ -1,6 +1,6 @@
 import { useEffect, useRef, createRef, RefObject } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { Button, Group } from "@mantine/core";
+import { Button, Group, Tooltip } from "@mantine/core";
 import { GridStack } from "gridstack";
 import { IconCirclePlus, IconReload } from "@tabler/icons-react";
 import Item from "./Item";
@@ -66,6 +66,29 @@ const Stacker: React.FC<StackerProps> = ({
     }
   };
 
+  const processButton = () => {
+    if (inputs.current.length < 2) {
+      return (
+        <Tooltip label="A minimum of 2 inputs is required for processing!">
+          <Button
+            variant="outline"
+            color="cyan"
+            data-disabled
+            onClick={(event) => event.preventDefault()}
+          >
+            Process
+          </Button>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Button variant="outline" color="cyan" onClick={processStack}>
+        Process
+      </Button>
+    );
+  };
+
   return (
     <div className="controlled-container">
       <Group justify="center">
@@ -77,9 +100,7 @@ const Stacker: React.FC<StackerProps> = ({
         >
           Add
         </Button>
-        <Button variant="outline" color="cyan" onClick={processStack}>
-          Process
-        </Button>
+        <div>{processButton()}</div>
         <Button
           variant="outline"
           color="cyan"

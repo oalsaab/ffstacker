@@ -1,7 +1,7 @@
 import { open } from "@tauri-apps/api/dialog";
 import { MouseEvent } from "react";
 import { Stack, Group, ActionIcon } from "@mantine/core";
-import { IconUpload, IconArrowsMove, IconSquareX } from "@tabler/icons-react";
+import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
 
 interface ItemProps {
   id: string;
@@ -28,9 +28,6 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
               stroke={1.5}
               className="drag-header"
             ></IconArrowsMove>
-          </ActionIcon>
-          <ActionIcon variant="transparent" color="red">
-            <IconSquareX stroke={1.5}></IconSquareX>
           </ActionIcon>
         </Group>
         <Group justify="center">
