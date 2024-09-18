@@ -10,6 +10,16 @@ pub struct Primed {
     pub end: u32,
 }
 
+impl Primed {
+    pub fn start_as_ts(&self) -> String {
+        todo!()
+    }
+
+    pub fn end_as_ts(&self) -> String {
+        todo!()
+    }
+}
+
 impl fmt::Display for Primed {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(

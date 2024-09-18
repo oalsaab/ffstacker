@@ -5,6 +5,7 @@ pub trait StackIdentity {
     fn identify(&self) -> Stack;
 }
 
+// Trait extension for learning purposes to see learn it's capabilities
 impl StackIdentity for Vec<Primed> {
     fn identify(&self) -> Stack {
         if self.iter().all(|item| item.x == 0) {
@@ -79,40 +80,47 @@ struct Stacker {
 }
 
 impl Stacker {
-    fn build(&self, stack: Stack, primed: Vec<Primed>) -> Stacker {
+    pub fn build(primed: Vec<Primed>) -> Stacker {
         Stacker {
-            stack,
+            stack: primed.identify(),
             primed,
             ffmpeg: Command::new("ffmpeg"),
         }
     }
 
-    fn input_arg(&self) -> String {
-        let n = self.primed.len();
-
-        match self.stack {
-            Stack::Horizontal => format!("hstack=inputs={}", n),
-            Stack::Vertical => format!("vstack=inputs={}", n),
-            Stack::X => Xstack::new(n).compose(),
-        }
-    }
-
-    fn stack(&mut self) {
-        // Add logic here....
-        match self.stack {
-            Stack::Horizontal => self.primed.sort_by_key(|f| f.x),
-            Stack::Vertical => self.primed.sort_by_key(|f| f.y),
-            Stack::X => self.primed.sort_by_key(|f| (f.y, f.x)), // Row Major Order Mosaic
-        }
-
+    fn add_inputs(&mut self) {
         for prime in self.primed.iter() {
             self.ffmpeg.args(["-i", &prime.path]);
             self.ffmpeg.args(["-ss", &prime.start.to_string()]);
             self.ffmpeg.args(["-to", &prime.end.to_string()]);
         }
+    }
 
-        self.ffmpeg.arg("-filter_complex");
-        self.ffmpeg.arg(&self.input_arg());
+    fn stack(&mut self) {
+        let n = self.primed.len();
+
+        match self.stack {
+            Stack::Horizontal => {
+                self.primed.sort_by_key(|f| f.x);
+                self.add_inputs();
+                self.ffmpeg.arg("-filter_complex");
+                self.ffmpeg.arg(format!("hstack=inputs={}", n));
+            }
+            Stack::Vertical => {
+                self.primed.sort_by_key(|f| f.y);
+                self.add_inputs();
+                self.ffmpeg.arg("-filter_complex");
+                self.ffmpeg.arg(format!("vstack=inputs={}", n));
+            }
+            Stack::X => {
+                self.primed.sort_by_key(|f| (f.y, f.x));
+                self.add_inputs();
+                self.ffmpeg.arg("-filter_complex");
+
+                let xstack_filter = Xstack::new(n).compose();
+            } // Row Major Order Mosaic
+        }
+
         self.ffmpeg.arg("output.mkv");
     }
 }
