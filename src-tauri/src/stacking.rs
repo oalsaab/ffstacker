@@ -1,5 +1,6 @@
 use crate::priming::Primed;
 
+use std::fmt::Write;
 use std::process::Command;
 pub trait StackIdentity {
     fn identify(&self) -> Stack;
@@ -52,8 +53,10 @@ impl Xstack {
     }
 
     fn gen_labels(&self) -> String {
-        (0..self.n).map(|idx| format!("[{}:v]", idx)).collect()
-        // (0..n).into_iter().fold(String::new(), |mut output |)
+        (0..self.n).fold(String::new(), |mut output, idx| {
+            let _ = write!(output, "[{idx}:v]");
+            output
+        })
     }
 
     fn gen_layout(&self) -> String {
@@ -80,7 +83,7 @@ struct Stacker {
 }
 
 impl Stacker {
-    pub fn build(primed: Vec<Primed>) -> Stacker {
+    pub fn new(primed: Vec<Primed>) -> Stacker {
         Stacker {
             stack: primed.identify(),
             primed,
