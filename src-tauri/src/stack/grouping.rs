@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::priming::Primed;
+use super::priming::Primed;
 
 pub trait Identifiable {
     fn id(&self) -> &str;
@@ -85,7 +85,6 @@ impl Group {
     {
         for item in v {
             let id = item.id().to_string();
-
             self.group.entry(id).or_default().push(item.into())
         }
 

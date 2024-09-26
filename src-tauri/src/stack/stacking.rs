@@ -1,4 +1,4 @@
-use crate::priming::Primed;
+use super::priming::Primed;
 
 use std::fmt::Write;
 use std::io;
@@ -125,7 +125,7 @@ impl Stacker {
                 self.primed.sort_by_key(|f| (f.y, f.x));
                 self.add_inputs();
                 self.ffmpeg.arg("-filter_complex");
-                self.ffmpeg.arg(&Xstack::new(n).compose());
+                self.ffmpeg.arg(Xstack::new(n).compose());
             } // Row Major Order Mosaic
         }
 
