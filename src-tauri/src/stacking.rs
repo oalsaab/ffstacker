@@ -1,7 +1,8 @@
 use crate::priming::Primed;
 
 use std::fmt::Write;
-use std::process::Command;
+use std::io;
+use std::process::{Child, Command};
 pub trait StackIdentity {
     fn identify(&self) -> Stack;
 }
@@ -38,7 +39,12 @@ impl Xstack {
     }
 
     fn compose(&self) -> String {
-        todo!()
+        format!(
+            "'{}xstack=inputs={}:layout={}[v]' -map '[v]'",
+            self.gen_labels(),
+            self.n,
+            self.gen_layout()
+        )
     }
 
     fn gen_offset(char: String, offset: usize) -> String {
@@ -76,7 +82,7 @@ impl Xstack {
     }
 }
 
-struct Stacker {
+pub struct Stacker {
     stack: Stack,
     primed: Vec<Primed>,
     ffmpeg: Command,
@@ -119,25 +125,43 @@ impl Stacker {
                 self.primed.sort_by_key(|f| (f.y, f.x));
                 self.add_inputs();
                 self.ffmpeg.arg("-filter_complex");
-
-                let xstack_filter = Xstack::new(n).compose();
+                self.ffmpeg.arg(&Xstack::new(n).compose());
             } // Row Major Order Mosaic
         }
 
         self.ffmpeg.arg("output.mkv");
     }
+
+    pub fn execute(&mut self) -> io::Result<Child> {
+        self.stack();
+        self.ffmpeg.spawn()
+    }
 }
 
-#[test]
-fn it_generates_layout() {
-    let result = Xstack::new(9).gen_layout();
-    let expected = "0_0|w0_0|w0+w1_0|0_h0|w0_h0|w0+w1_h0|0_h0+h1|w0_h0+h1|w0+w1_h0+h1";
-    assert_eq!(result, expected)
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn it_generates_labels() {
-    let result = Xstack::new(4).gen_labels();
-    let expected = "[0:v][1:v][2:v][3:v]".to_string();
-    assert_eq!(result, expected)
+    #[test]
+    fn it_generates_layout() {
+        let result = Xstack::new(9).gen_layout();
+        let expected = "0_0|w0_0|w0+w1_0|0_h0|w0_h0|w0+w1_h0|0_h0+h1|w0_h0+h1|w0+w1_h0+h1";
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn it_generates_labels() {
+        let result = Xstack::new(4).gen_labels();
+        let expected = "[0:v][1:v][2:v][3:v]".to_string();
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn it_xstack_composes() {
+        let result = Xstack::new(4).compose();
+        let expected =
+            "'[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]' -map '[v]'"
+                .to_string();
+        assert_eq!(result, expected)
+    }
 }
