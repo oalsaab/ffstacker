@@ -22,7 +22,7 @@ impl StackIdentity for Vec<Primed> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Stack {
     X,
     Horizontal,
@@ -140,7 +140,56 @@ impl Stacker {
 
 #[cfg(test)]
 mod tests {
+    use std::ffi::OsStr;
+
     use super::*;
+
+    fn vstack() -> Vec<Primed> {
+        vec![
+            Primed {
+                x: 0,
+                y: 0,
+                ..Default::default()
+            },
+            Primed {
+                x: 0,
+                y: 1,
+                ..Default::default()
+            },
+        ]
+    }
+
+    fn hstack() -> Vec<Primed> {
+        vec![
+            Primed {
+                x: 0,
+                y: 0,
+                ..Default::default()
+            },
+            Primed {
+                x: 1,
+                y: 0,
+                ..Default::default()
+            },
+        ]
+    }
+
+    fn xstack() -> Vec<Primed> {
+        vec![
+            Primed {
+                x: 0,
+                y: 1,
+                path: "1.mov".to_string(),
+                ..Default::default()
+            },
+            Primed {
+                x: 1,
+                y: 0,
+                path: "2.mov".to_string(),
+                ..Default::default()
+            },
+        ]
+    }
 
     #[test]
     fn it_generates_layout() {
@@ -164,4 +213,14 @@ mod tests {
                 .to_string();
         assert_eq!(result, expected)
     }
+
+    #[test]
+    fn it_identifies_stack() {
+        assert_eq!(vstack().identify(), Stack::Vertical);
+        assert_eq!(hstack().identify(), Stack::Horizontal);
+        assert_eq!(xstack().identify(), Stack::X);
+    }
+
+    // Generate tests for what the args contain when you get correct output...
+    // ...get_args().collect() --> Vec<OsStr> ... assert_eq(args, &["...", "..."])
 }
