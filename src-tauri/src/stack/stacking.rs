@@ -1,4 +1,4 @@
-use super::priming::Primed;
+use super::priming::{Duration, Primed};
 
 use std::fmt::Write;
 use std::io;
@@ -100,8 +100,8 @@ impl Stacker {
     fn add_inputs(&mut self) {
         for prime in self.primed.iter() {
             self.ffmpeg.args(["-i", &prime.path]);
-            self.ffmpeg.args(["-ss", &prime.start.to_string()]);
-            self.ffmpeg.args(["-to", &prime.end.to_string()]);
+            self.ffmpeg.args(["-ss", &prime.start.as_ts()]);
+            self.ffmpeg.args(["-to", &prime.end.as_ts()]);
         }
     }
 
@@ -140,9 +140,8 @@ impl Stacker {
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::OsStr;
-
     use super::*;
+    use std::ffi::OsStr;
 
     fn vstack() -> Vec<Primed> {
         vec![
