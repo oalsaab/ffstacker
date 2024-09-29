@@ -38,10 +38,9 @@ fn process(
 fn probe(input: String) -> stack::Probed {
     println!("Input received: {}", input);
 
-    stack::Probed {
-        filename: "beef.mov".into(),
-        dimensions: "420x420".into(),
-        duration: 1000,
+    match stack::Probe::new(&input).execute() {
+        Ok(stdout) => stack::Probed::build(&stdout).unwrap_or_default(),
+        Err(_) => stack::Probed::default(),
     }
 }
 

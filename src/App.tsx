@@ -96,8 +96,10 @@ const StackManager: React.FC = () => {
               </HoverCard.Target>
               <HoverCard.Dropdown>
                 <Text size="xs" ta="center">
+                  {/* TODO: Create these through a map func */}
                   File: {probed.filename} <br />
-                  Dimensions: {probed.dimensions}
+                  Width: {probed.width} <br />
+                  Height: {probed.height}
                 </Text>
               </HoverCard.Dropdown>
             </HoverCard>

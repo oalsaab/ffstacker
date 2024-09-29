@@ -22,6 +22,7 @@ interface SliderValues {
 // Tauri serialised return types
 interface Probed {
   filename: string;
-  dimensions: string;
   duration: number;
+  width: number;
+  height: number;
 }
