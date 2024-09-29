@@ -11,7 +11,7 @@ impl Duration for u32 {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Primed {
     pub id: String,
     pub x: u8,

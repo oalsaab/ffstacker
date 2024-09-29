@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 
 use super::priming::Primed;
@@ -25,20 +25,20 @@ impl Identifiable for Source {
     }
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone)]
 pub struct Position {
     id: String,
     x: u8,
     y: u8,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone)]
 pub struct Source {
     id: String,
     path: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone)]
 pub struct Slider {
     id: String,
     values: [u32; 2],
@@ -79,13 +79,13 @@ impl Group {
         }
     }
 
-    pub fn add<T>(&mut self, v: Vec<T>) -> &mut Group
+    pub fn add<T>(&mut self, values: Vec<T>) -> &mut Group
     where
         T: Identifiable + Into<Inputs>,
     {
-        for item in v {
-            let id = item.id().to_string();
-            self.group.entry(id).or_default().push(item.into())
+        for value in values {
+            let id = value.id().to_string();
+            self.group.entry(id).or_default().push(value.into())
         }
 
         self
@@ -126,5 +126,44 @@ impl Group {
                 primed
             })
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_groups() {
+        let primed = Group::new()
+            .add(vec![Position {
+                id: String::from("1"),
+                x: 0,
+                y: 1,
+            }])
+            .add(vec![Source {
+                id: String::from("1"),
+                path: String::from("x.mov"),
+            }])
+            .add(vec![Slider {
+                id: String::from("1"),
+                values: [10, 20],
+            }])
+            .clean()
+            .prime();
+
+        let result = primed.first().unwrap();
+
+        assert_eq!(
+            result,
+            &Primed {
+                id: String::from("1"),
+                x: 0,
+                y: 1,
+                path: String::from("x.mov"),
+                start: 10,
+                end: 20
+            }
+        )
     }
 }
