@@ -73,10 +73,10 @@ impl Probe {
 
     pub fn execute(&mut self) -> Result<Vec<u8>, ProbeError> {
         self.probe();
-        let child = self.ffprobe.stdout(Stdio::piped()).spawn();
+        let spawned = self.ffprobe.stdout(Stdio::piped()).spawn();
 
-        let output = match child {
-            Ok(c) => c.wait_with_output(),
+        let output = match spawned {
+            Ok(child) => child.wait_with_output(),
             Err(e) => {
                 eprintln!("Spawning ffprobe failed: {e}");
                 return Err(ProbeError::Spawn);
