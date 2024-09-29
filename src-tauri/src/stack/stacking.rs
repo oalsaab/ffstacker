@@ -97,12 +97,15 @@ impl Stacker {
         }
     }
 
-    fn add_inputs(&mut self) {
+    fn arg_inputs(&mut self) -> &mut Command {
         for prime in self.primed.iter() {
-            self.ffmpeg.args(["-i", &prime.path]);
-            self.ffmpeg.args(["-ss", &prime.start.as_ts()]);
-            self.ffmpeg.args(["-to", &prime.end.as_ts()]);
+            self.ffmpeg
+                .args(["-i", &prime.path])
+                .args(["-ss", &prime.start.as_ts()])
+                .args(["-to", &prime.end.as_ts()]);
         }
+
+        &mut self.ffmpeg
     }
 
     fn stack(&mut self) {
@@ -111,21 +114,21 @@ impl Stacker {
         match self.stack {
             Stack::Horizontal => {
                 self.primed.sort_by_key(|f| f.x);
-                self.add_inputs();
-                self.ffmpeg.arg("-filter_complex");
-                self.ffmpeg.arg(format!("hstack=inputs={}", n));
+                self.arg_inputs()
+                    .arg("-filter_complex")
+                    .arg(format!("hstack=inputs={}", n));
             }
             Stack::Vertical => {
                 self.primed.sort_by_key(|f| f.y);
-                self.add_inputs();
-                self.ffmpeg.arg("-filter_complex");
-                self.ffmpeg.arg(format!("vstack=inputs={}", n));
+                self.arg_inputs()
+                    .arg("-filter_complex")
+                    .arg(format!("vstack=inputs={}", n));
             }
             Stack::X => {
                 self.primed.sort_by_key(|f| (f.y, f.x));
-                self.add_inputs();
-                self.ffmpeg.arg("-filter_complex");
-                self.ffmpeg.arg(Xstack::new(n).compose());
+                self.arg_inputs()
+                    .arg("-filter_complex")
+                    .arg(Xstack::new(n).compose());
             } // Row Major Order Mosaic
         }
 
