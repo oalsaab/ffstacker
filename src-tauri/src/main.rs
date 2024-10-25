@@ -38,9 +38,19 @@ fn process(
 fn probe(input: String) -> stack::Probed {
     println!("Input received: {}", input);
 
+    // Using default is misleading GUI frontend on any errs?
     match stack::Probe::new(&input).execute() {
-        Ok(stdout) => stack::Probed::build(&stdout).unwrap_or_default(),
-        Err(_) => stack::Probed::default(),
+        Ok(stdout) => match stack::Probed::build(&stdout) {
+            Ok(probed) => probed,
+            Err(e) => {
+                eprintln!("Failed to build probed output: {e}");
+                stack::Probed::default()
+            }
+        },
+        Err(_) => {
+            eprintln!("Failed to execute FFprobe");
+            stack::Probed::default()
+        }
     }
 }
 
