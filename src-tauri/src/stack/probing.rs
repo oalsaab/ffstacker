@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::process::{Command, Stdio};
 
 #[derive(Deserialize)]
-struct Output {
+struct ProbeOutput {
     streams: Vec<Stream>,
     format: Format,
 }
@@ -11,11 +11,12 @@ struct Output {
 struct Stream {
     width: u16,
     height: u16,
-    duration: u32,
+    duration: Option<String>,
 }
 #[derive(Deserialize)]
 struct Format {
     filename: String,
+    duration: String,
 }
 
 pub enum ProbeError {
@@ -27,22 +28,32 @@ pub enum ProbeError {
 #[derive(Debug, Default, Serialize, Clone)]
 pub struct Probed {
     pub filename: String,
-    pub duration: u32,
+    pub duration: f64,
     pub height: u16,
     pub width: u16,
 }
 
 impl Probed {
     pub fn build(stdout: &[u8]) -> Result<Probed, serde_json::Error> {
-        let output: Output = serde_json::from_slice(stdout)?;
+        let output: ProbeOutput = serde_json::from_slice(stdout)?;
 
         match output.streams.first() {
-            Some(stream) => Ok(Probed {
-                filename: output.format.filename,
-                duration: stream.duration,
-                height: stream.height,
-                width: stream.width,
-            }),
+            Some(stream) => {
+                // Output of FFprobe should always give us some float string duration
+                let duration = &stream
+                    .duration
+                    .as_ref()
+                    .unwrap_or(&output.format.duration)
+                    .parse::<f64>()
+                    .unwrap();
+
+                Ok(Probed {
+                    filename: output.format.filename,
+                    duration: *duration,
+                    height: stream.height,
+                    width: stream.width,
+                })
+            }
             None => Ok(Probed::default()),
         }
     }
