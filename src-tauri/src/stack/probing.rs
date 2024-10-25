@@ -74,11 +74,11 @@ impl Probe {
 
     fn probe(&mut self) {
         self.ffprobe
-            .args(["-v quiet"])
-            .args(["-print_format json"])
+            .args(["-v", "quiet"])
+            .args(["-print_format", "json"])
             .arg("-show_format")
             .arg("-show_streams")
-            .args(["-select_streams v:0"])
+            .args(["-select_streams", "v:0"])
             .arg(&self.input);
     }
 
