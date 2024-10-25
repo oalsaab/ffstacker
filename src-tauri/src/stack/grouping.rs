@@ -41,7 +41,7 @@ pub struct Source {
 #[derive(Default, Deserialize, Clone)]
 pub struct Slider {
     id: String,
-    values: [u32; 2],
+    values: [f64; 2],
 }
 
 pub enum Inputs {
@@ -118,8 +118,8 @@ impl Group {
                         }
                         Inputs::Slider(slider) => {
                             let [start, end] = slider.values;
-                            primed.start = start;
-                            primed.end = end;
+                            primed.start = start as u32;
+                            primed.end = end as u32;
                         }
                     }
                 }
@@ -147,7 +147,7 @@ mod tests {
             }])
             .add(vec![Slider {
                 id: String::from("1"),
-                values: [10, 20],
+                values: [10.0, 20.0],
             }])
             .clean()
             .prime();
