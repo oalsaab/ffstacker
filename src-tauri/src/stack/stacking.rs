@@ -82,6 +82,7 @@ impl Xstack {
     }
 }
 
+/// Wrapper for FFmpeg stack execution
 pub struct Stacker {
     stack: Stack,
     primed: Vec<Primed>,

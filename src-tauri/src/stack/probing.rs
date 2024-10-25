@@ -25,6 +25,7 @@ pub enum ProbeError {
     FFprobe,
 }
 
+/// Represent output of executing FFprobe
 #[derive(Debug, Default, Serialize, Clone)]
 pub struct Probed {
     pub filename: String,
@@ -59,6 +60,7 @@ impl Probed {
     }
 }
 
+/// Wrapper for FFprobe execution
 pub struct Probe {
     input: String,
     ffprobe: Command,

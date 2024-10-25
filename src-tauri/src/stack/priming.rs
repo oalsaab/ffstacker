@@ -11,6 +11,7 @@ impl Duration for u32 {
     }
 }
 
+/// The result of grouping GUI input by ID
 #[derive(Debug, PartialEq, Default)]
 pub struct Primed {
     pub id: String,

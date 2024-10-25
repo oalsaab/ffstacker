@@ -68,6 +68,7 @@ impl From<Slider> for Inputs {
     }
 }
 
+/// Group the Position, Slider, and Source values received from the GUI
 pub struct Group {
     group: HashMap<String, Vec<Inputs>>,
 }
