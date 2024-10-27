@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod stack;
+use stack::Execution;
 
 // enum Process {
 //     InProgress,
@@ -29,7 +30,7 @@ fn process(
         println!("{}", item)
     }
 
-    // stack::Stacker::new(primed).execute().unwrap();
+    stack::Stacker::new(primed).execute().unwrap();
 
     "From rust".to_string()
 }

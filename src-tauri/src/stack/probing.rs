@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::process::{Command, Stdio};
+use std::process::Command;
+
+use super::Execution;
 
 #[derive(Deserialize)]
 struct ProbeOutput {
@@ -17,12 +19,6 @@ struct Stream {
 struct Format {
     filename: String,
     duration: String,
-}
-
-pub enum ProbeError {
-    Spawn,
-    OutputWait,
-    FFprobe,
 }
 
 /// Represent output of executing FFprobe
@@ -73,43 +69,16 @@ impl Probe {
             ffprobe: Command::new("ffprobe"),
         }
     }
+}
 
-    fn probe(&mut self) {
+impl Execution for Probe {
+    fn assemble(&mut self) -> &mut Command {
         self.ffprobe
             .args(["-v", "quiet"])
             .args(["-print_format", "json"])
             .arg("-show_format")
             .arg("-show_streams")
             .args(["-select_streams", "v:0"])
-            .arg(&self.input);
-    }
-
-    pub fn execute(&mut self) -> Result<Vec<u8>, ProbeError> {
-        self.probe();
-        let spawned = self.ffprobe.stdout(Stdio::piped()).spawn();
-
-        let output = match spawned {
-            Ok(child) => child.wait_with_output(),
-            Err(e) => {
-                eprintln!("Spawning ffprobe failed: {e}");
-                return Err(ProbeError::Spawn);
-            }
-        };
-
-        let out = match output {
-            Ok(out) => out,
-            Err(e) => {
-                eprintln!("Failed to wait on child: {e}");
-                return Err(ProbeError::OutputWait);
-            }
-        };
-
-        match out.status.success() {
-            true => Ok(out.stdout),
-            false => {
-                eprintln!("Probing failed with code: {:?}", out.status.code());
-                Err(ProbeError::FFprobe)
-            }
-        }
+            .arg(&self.input)
     }
 }

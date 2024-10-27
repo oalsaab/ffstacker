@@ -1,8 +1,10 @@
 use super::priming::{Duration, Primed};
+use super::Execution;
 
 use std::fmt::Write;
 use std::io;
-use std::process::{Child, Command};
+use std::process::Command;
+
 pub trait StackIdentity {
     fn identify(&self) -> Stack;
 }
@@ -101,15 +103,17 @@ impl Stacker {
     fn arg_inputs(&mut self) -> &mut Command {
         for prime in self.primed.iter() {
             self.ffmpeg
-                .args(["-i", &prime.path])
                 .args(["-ss", &prime.start.as_ts()])
-                .args(["-to", &prime.end.as_ts()]);
+                .args(["-to", &prime.end.as_ts()])
+                .args(["-i", &prime.path]);
         }
 
         &mut self.ffmpeg
     }
+}
 
-    fn stack(&mut self) {
+impl Execution for Stacker {
+    fn assemble(&mut self) -> &mut Command {
         let n = self.primed.len();
 
         match self.stack {
@@ -133,12 +137,7 @@ impl Stacker {
             } // Row Major Order Mosaic
         }
 
-        self.ffmpeg.arg("output.mkv");
-    }
-
-    pub fn execute(&mut self) -> io::Result<Child> {
-        self.stack();
-        self.ffmpeg.spawn()
+        self.ffmpeg.arg("output.mkv")
     }
 }
 
