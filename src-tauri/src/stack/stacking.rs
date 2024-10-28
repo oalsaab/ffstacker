@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn it_generates_labels() {
         let result = Xstack::new(4).gen_labels();
-        let expected = "[0:v][1:v][2:v][3:v]".to_string();
+        let expected = "[0:v][1:v][2:v][3:v]";
         assert_eq!(result, expected)
     }
 
@@ -211,8 +211,7 @@ mod tests {
     fn it_xstack_composes() {
         let result = Xstack::new(4).compose();
         let expected =
-            "'[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]' -map '[v]'"
-                .to_string();
+            "'[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]' -map '[v]'";
         assert_eq!(result, expected)
     }
 
