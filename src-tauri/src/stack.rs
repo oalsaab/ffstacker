@@ -42,7 +42,13 @@ pub trait Execution {
         match out.status.success() {
             true => Ok(out.stdout),
             false => {
-                eprintln!("Command failed with code: {:?}", out.status.code());
+                let code = out
+                    .status
+                    .code()
+                    .and_then(|f| Some(f.to_string()))
+                    .unwrap_or("unknown".into());
+
+                eprintln!("Command failed with code: {}", code);
                 Err(ExecuteError::Execution)
             }
         }
