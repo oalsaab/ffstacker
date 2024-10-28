@@ -41,8 +41,9 @@ impl Xstack {
     }
 
     fn compose(&self) -> String {
+        // windows: r#""{}xstack=inputs={}:layout={}[v]" -map "[v]""#
         format!(
-            "'{}xstack=inputs={}:layout={}[v]' -map '[v]'",
+            "{}xstack=inputs={}:layout='{}'[v] -map [v]",
             self.gen_labels(),
             self.n,
             self.gen_layout()
@@ -211,7 +212,7 @@ mod tests {
     fn it_xstack_composes() {
         let result = Xstack::new(4).compose();
         let expected =
-            "'[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]' -map '[v]'";
+            "[0:v][1:v][2:v][3:v]xstack=inputs=4:layout='0_0|w0_0|0_h0|w0_h0'[v] -map [v]";
         assert_eq!(result, expected)
     }
 
