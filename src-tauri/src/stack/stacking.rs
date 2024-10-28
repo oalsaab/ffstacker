@@ -42,9 +42,8 @@ impl Xstack {
     }
 
     fn compose(&self) -> String {
-        // windows: r#""{}xstack=inputs={}:layout={}[v]" -map "[v]""#
         format!(
-            "{}xstack=inputs={}:layout='{}'[v] -map [v]",
+            "{}xstack=inputs={}:layout='{}'[v]",
             self.gen_labels(),
             self.n,
             self.gen_layout()
@@ -135,7 +134,8 @@ impl Execution for Stacker {
                 self.primed.sort_by_key(|f| (f.y, f.x));
                 self.arg_inputs()
                     .arg("-filter_complex")
-                    .arg(Xstack::new(n).compose());
+                    .arg(Xstack::new(n).compose())
+                    .args(["-map", "[v]"]);
             } // Row Major Order Mosaic
         }
 
@@ -220,8 +220,7 @@ mod tests {
     #[test]
     fn it_xstack_composes() {
         let result = Xstack::new(4).compose();
-        let expected =
-            "[0:v][1:v][2:v][3:v]xstack=inputs=4:layout='0_0|w0_0|0_h0|w0_h0'[v] -map [v]";
+        let expected = "[0:v][1:v][2:v][3:v]xstack=inputs=4:layout='0_0|w0_0|0_h0|w0_h0'[v]";
         assert_eq!(result, expected)
     }
 
