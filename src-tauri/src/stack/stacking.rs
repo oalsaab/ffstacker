@@ -1,8 +1,9 @@
 use super::priming::{Duration, Primed};
 use super::Execution;
 
+use core::fmt;
+use std::ffi::OsStr;
 use std::fmt::Write;
-use std::io;
 use std::process::Command;
 
 pub trait StackIdentity {
@@ -138,14 +139,22 @@ impl Execution for Stacker {
             } // Row Major Order Mosaic
         }
 
+        println!("{}", self);
+
         self.ffmpeg.arg("output.mkv")
+    }
+}
+
+impl fmt::Display for Stacker {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let args: Vec<&OsStr> = self.ffmpeg.get_args().collect();
+        write!(f, "Args: {:#?}\n Identity: {:#?}", args, self.stack)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ffi::OsStr;
 
     fn vstack() -> Vec<Primed> {
         vec![
