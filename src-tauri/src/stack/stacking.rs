@@ -101,7 +101,7 @@ impl Stacker {
         }
     }
 
-    fn arg_inputs(&mut self) -> &mut Command {
+    fn arg_trimmings(&mut self) -> &mut Command {
         for prime in self.primed.iter() {
             self.ffmpeg
                 .args(["-ss", &prime.start.as_ts()])
@@ -123,19 +123,19 @@ impl Execution for Stacker {
         match self.stack {
             Stack::Horizontal => {
                 self.primed.sort_by_key(|f| f.x);
-                self.arg_inputs()
+                self.arg_trimmings()
                     .arg("-filter_complex")
                     .arg(format!("hstack=inputs={}", n));
             }
             Stack::Vertical => {
                 self.primed.sort_by_key(|f| f.y);
-                self.arg_inputs()
+                self.arg_trimmings()
                     .arg("-filter_complex")
                     .arg(format!("vstack=inputs={}", n));
             }
             Stack::X => {
                 self.primed.sort_by_key(|f| (f.y, f.x));
-                self.arg_inputs()
+                self.arg_trimmings()
                     .arg("-filter_complex")
                     .arg(Xstack::new(n).compose())
                     .args(["-map", "[v]"]);
