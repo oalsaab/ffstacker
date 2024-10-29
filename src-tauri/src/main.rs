@@ -10,7 +10,8 @@ use stack::Execution;
 //     UserError,
 // }
 
-#[tauri::command]
+// Command needs to be async to handle "hanging" of GUI
+#[tauri::command(async)]
 fn process(
     positions: Vec<stack::Position>,
     sources: Vec<stack::Source>,
