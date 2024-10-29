@@ -16,14 +16,24 @@ pub enum ExecuteError {
     Execution,
 }
 
+pub enum Handle {
+    Out,
+    Err,
+}
+
 pub trait Execution {
+    const HANDLE: Handle;
+
     fn assemble(&mut self) -> &mut Command;
 
     fn execute(&mut self) -> Result<Vec<u8>, ExecuteError> {
         let ff = self.assemble();
-        let spawned = ff.stdout(Stdio::piped()).spawn();
+        let ff = match Self::HANDLE {
+            Handle::Out => ff.stdout(Stdio::piped()),
+            Handle::Err => ff.stderr(Stdio::piped()),
+        };
 
-        let output = match spawned {
+        let output = match ff.spawn() {
             Ok(child) => child.wait_with_output(),
             Err(e) => {
                 eprintln!("Spawning command failed: {e}");

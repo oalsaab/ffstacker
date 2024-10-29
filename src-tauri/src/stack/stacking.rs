@@ -1,5 +1,5 @@
 use super::priming::{Duration, Primed};
-use super::Execution;
+use super::{Execution, Handle};
 
 use core::fmt;
 use std::ffi::OsStr;
@@ -114,6 +114,9 @@ impl Stacker {
 }
 
 impl Execution for Stacker {
+    // FFmpeg pipes output to stderr
+    const HANDLE: Handle = Handle::Err;
+
     fn assemble(&mut self) -> &mut Command {
         let n = self.primed.len();
 
@@ -139,8 +142,6 @@ impl Execution for Stacker {
             } // Row Major Order Mosaic
         }
 
-        println!("{}", self);
-
         self.ffmpeg.arg("output.mkv")
     }
 }
@@ -148,7 +149,7 @@ impl Execution for Stacker {
 impl fmt::Display for Stacker {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let args: Vec<&OsStr> = self.ffmpeg.get_args().collect();
-        write!(f, "Args: {:#?}\n Identity: {:#?}", args, self.stack)
+        write!(f, "Args: {:#?}\nIdentity: {:#?}", args, self.stack)
     }
 }
 

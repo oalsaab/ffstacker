@@ -1,7 +1,7 @@
+use super::{Execution, Handle};
+
 use serde::{Deserialize, Serialize};
 use std::process::Command;
-
-use super::Execution;
 
 #[derive(Deserialize)]
 struct ProbeOutput {
@@ -72,6 +72,9 @@ impl Probe {
 }
 
 impl Execution for Probe {
+    // FFprobe pipes output to stdout
+    const HANDLE: Handle = Handle::Out;
+
     fn assemble(&mut self) -> &mut Command {
         self.ffprobe
             .args(["-v", "quiet"])
