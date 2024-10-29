@@ -5,8 +5,9 @@ mod stack;
 use stack::Execution;
 
 // enum Process {
-//     InProgress,
+//     Running,
 //     Complete,
+//     Failed,
 //     UserError,
 // }
 
@@ -31,6 +32,8 @@ fn process(
         println!("{}", item)
     }
 
+    // Handle errs? (Wrap process in red color on failure?)
+    // Emit process to GUI?
     stack::Stacker::new(primed).execute().unwrap();
 
     "From rust".to_string()

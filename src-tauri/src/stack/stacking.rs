@@ -142,6 +142,7 @@ impl Execution for Stacker {
             } // Row Major Order Mosaic
         }
 
+        // todo: Allow user to set output & filename?
         self.ffmpeg.arg("output.mkv")
     }
 }
