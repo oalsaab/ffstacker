@@ -55,8 +55,8 @@ pub trait Execution {
                 let code = out
                     .status
                     .code()
-                    .and_then(|f| Some(f.to_string()))
-                    .unwrap_or("unknown".into());
+                    .map(|f| f.to_string())
+                    .unwrap_or(String::from("unknown"));
 
                 eprintln!("Command failed with code: {}", code);
                 Err(ExecuteError::Execution)
