@@ -16,6 +16,7 @@ import "@mantine/core/styles.css";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 import Stacker from "./lib/components/Stacker";
+import Trimmer from "./lib/components/Trimmer";
 
 function valueLabelFormat(value: number) {
   return new Date(value * 1000).toISOString().slice(11, 19);
@@ -26,7 +27,7 @@ const StackManager: React.FC = () => {
   const [items, setItems] = useState(initialItems);
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
   const [showSliders, setShowSlider] = useState<{ [key: string]: JSX.Element }>(
-    {}
+    {},
   );
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
@@ -45,8 +46,8 @@ const StackManager: React.FC = () => {
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
     setSliderValue((prevValues) =>
       prevValues.map((slider) =>
-        slider.id === id ? { ...slider, values: value } : slider
-      )
+        slider.id === id ? { ...slider, values: value } : slider,
+      ),
     );
   };
 
@@ -71,40 +72,11 @@ const StackManager: React.FC = () => {
     setShowSlider((prev) => ({
       ...prev,
       [id]: (
-        <Stack>
-          <RangeSlider
-            color="red"
-            mt={"xl"}
-            pos={"relative"}
-            minRange={10}
-            min={0}
-            max={probed.duration}
-            step={5}
-            label={valueLabelFormat}
-            onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
-          />
-          <Group justify="center">
-            <HoverCard width={200} shadow="md">
-              <HoverCard.Target>
-                <ActionIcon
-                  variant="transparent"
-                  size="compact-xs"
-                  color="pink"
-                >
-                  <IconInfoCircle />
-                </ActionIcon>
-              </HoverCard.Target>
-              <HoverCard.Dropdown>
-                <Text size="xs" ta="center">
-                  {/* TODO: Create these through a map func */}
-                  File: {probed.filename} <br />
-                  Width: {probed.width} <br />
-                  Height: {probed.height}
-                </Text>
-              </HoverCard.Dropdown>
-            </HoverCard>
-          </Group>
-        </Stack>
+        <Trimmer
+          id={id}
+          probed={probed}
+          handleSliderChangeEnd={handleSliderChangeEnd}
+        ></Trimmer>
       ),
     }));
   };

@@ -4,12 +4,6 @@ import { Stack, Group, ActionIcon, Tooltip } from "@mantine/core";
 import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
 import { videoExtensions } from "./constants";
 
-interface ItemProps {
-  id: string;
-  showSlider: JSX.Element;
-  handleFileUpload: (id: string, file: string | string[]) => void;
-}
-
 const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
   async function handler(_: MouseEvent<HTMLButtonElement>) {
     const selected = await open({

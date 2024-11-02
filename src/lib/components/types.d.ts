@@ -14,6 +14,12 @@ interface ItemProps {
   handleFileUpload: (id: string, file: string | string[]) => void;
 }
 
+interface TrimmerProps {
+  id: string;
+  probed: Probed;
+  handleSliderChangeEnd: (id: string, value: [number, number]) => void;
+}
+
 interface SliderValues {
   id: string;
   values: [number, number];
