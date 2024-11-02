@@ -17,6 +17,7 @@ fn process(
     positions: Vec<stack::Position>,
     sources: Vec<stack::Source>,
     sliders: Vec<stack::Slider>,
+    output: String,
 ) -> String {
     // Clean call ensures no empty items on grid.
     let primed = stack::Group::new()
@@ -34,7 +35,7 @@ fn process(
 
     // Handle errs? (Wrap process in red color on failure?)
     // Emit process to GUI?
-    stack::Stacker::new(primed).execute().unwrap();
+    stack::Stacker::new(primed, &output).execute().unwrap();
 
     "From rust".to_string()
 }

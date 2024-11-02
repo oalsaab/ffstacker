@@ -1,5 +1,6 @@
 import { useEffect, useRef, createRef, RefObject } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
 import { Button, Group, Tooltip } from "@mantine/core";
 import { GridStack } from "gridstack";
 import { IconCirclePlus, IconReload } from "@tabler/icons-react";
@@ -36,7 +37,7 @@ const Stacker: React.FC<StackerProps> = ({
           column: 4,
           handle: ".drag-header",
         },
-        ".controlled"
+        ".controlled",
       );
 
     const grid = gridRef.current;
@@ -57,7 +58,16 @@ const Stacker: React.FC<StackerProps> = ({
   const processStack = async () => {
     const layout = gridRef.current?.save();
 
-    if (layout) {
+    const selected = await open({
+      multiple: false,
+      directory: true,
+    });
+
+    if (Array.isArray(selected)) {
+      return;
+    }
+
+    if (selected && layout) {
       let result = await invoke("process", {
         positions: layout,
         sources: inputs.current,

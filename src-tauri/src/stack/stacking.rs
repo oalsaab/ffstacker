@@ -2,8 +2,11 @@ use super::priming::{Duration, Primed};
 use super::{Execution, Handle};
 
 use core::fmt;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use std::ffi::OsStr;
 use std::fmt::Write;
+use std::path::PathBuf;
 use std::process::Command;
 
 pub trait StackIdentity {
@@ -90,14 +93,16 @@ pub struct Stacker {
     stack: Stack,
     primed: Vec<Primed>,
     ffmpeg: Command,
+    output: String,
 }
 
 impl Stacker {
-    pub fn new(primed: Vec<Primed>) -> Stacker {
+    pub fn new(primed: Vec<Primed>, output: &str) -> Stacker {
         Stacker {
             stack: primed.identify(),
             primed,
             ffmpeg: Command::new("ffmpeg"),
+            output: output.to_string(),
         }
     }
 
@@ -110,6 +115,23 @@ impl Stacker {
         }
 
         &mut self.ffmpeg
+    }
+
+    fn rand_fname(&self) -> String {
+        // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html
+        let rand_str: String = thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(30)
+            .map(char::from)
+            .collect();
+
+        format!("stacked-{}", rand_str)
+    }
+
+    fn output_path(&self) -> String {
+        let mut path = PathBuf::from(self.output.clone());
+        path.push(format!("{}.mkv", self.rand_fname()));
+        path.to_string_lossy().into_owned()
     }
 }
 
@@ -142,8 +164,7 @@ impl Execution for Stacker {
             } // Row Major Order Mosaic
         }
 
-        // todo: Allow user to set output & filename?
-        self.ffmpeg.arg("output.mkv")
+        self.ffmpeg.arg(self.output_path())
     }
 }
 
