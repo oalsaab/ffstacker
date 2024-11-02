@@ -1,23 +1,22 @@
 import { HoverCard, Text, Group, ActionIcon } from "@mantine/core";
 
-import { IconInfoCircle } from "@tabler/icons-react";
+import { IconInfoSquare } from "@tabler/icons-react";
 
 const Metadata: React.FC<MetadataProps> = ({ probed }) => {
   return (
     <Group justify="center">
-      <HoverCard width={200} shadow="md">
+      <HoverCard shadow="md">
         <HoverCard.Target>
-          <ActionIcon variant="transparent" size="compact-xs" color="pink">
-            <IconInfoCircle />
+          <ActionIcon variant="transparent">
+            <IconInfoSquare />
           </ActionIcon>
         </HoverCard.Target>
         <HoverCard.Dropdown>
-          <Text size="xs" ta="center">
-            {/* TODO: Create these through a map func */}
-            File: {probed.filename} <br />
-            Width: {probed.width} <br />
-            Height: {probed.height}
-          </Text>
+          {Object.entries(probed).map(([k, v]) => (
+            <Text size="xs">
+              {k.toLocaleUpperCase()}: {v}
+            </Text>
+          ))}
         </HoverCard.Dropdown>
       </HoverCard>
     </Group>
