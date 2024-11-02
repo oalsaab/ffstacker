@@ -1,7 +1,8 @@
 import { open } from "@tauri-apps/api/dialog";
 import { MouseEvent } from "react";
-import { Stack, Group, ActionIcon } from "@mantine/core";
+import { Stack, Group, ActionIcon, Tooltip } from "@mantine/core";
 import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
+import { videoExtensions } from "./constants";
 
 interface ItemProps {
   id: string;
@@ -11,7 +12,10 @@ interface ItemProps {
 
 const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
   async function handler(_: MouseEvent<HTMLButtonElement>) {
-    const selected = await open({ multiple: false });
+    const selected = await open({
+      multiple: false,
+      filters: [{ name: "Video", extensions: videoExtensions }],
+    });
 
     if (selected) {
       handleFileUpload(id, selected);
@@ -22,7 +26,7 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
     <div className="grid-content">
       <Stack justify="center" gap="md">
         <Group justify="space-between">
-          <ActionIcon variant="outline" color="pink">
+          <ActionIcon variant="default" color="pink">
             <IconArrowsMove
               style={{ width: "70%", height: "70%" }}
               stroke={1.5}
@@ -31,9 +35,14 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
           </ActionIcon>
         </Group>
         <Group justify="center">
-          <ActionIcon variant="outline" color="pink" onClick={handler}>
-            <IconUpload style={{ width: "70%", height: "70%" }} stroke={1.5} />
-          </ActionIcon>
+          <Tooltip label="Click to select a video file to stack">
+            <ActionIcon variant="outline" color="teal" onClick={handler}>
+              <IconUpload
+                style={{ width: "70%", height: "70%" }}
+                stroke={1.5}
+              />
+            </ActionIcon>
+          </Tooltip>
         </Group>
         <div className="slider">{showSlider}</div>
       </Stack>
