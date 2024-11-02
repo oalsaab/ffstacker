@@ -35,7 +35,16 @@ fn process(
 
     // Handle errs? (Wrap process in red color on failure?)
     // Emit process to GUI?
-    stack::Stacker::new(primed, &output).execute().unwrap();
+    let execution = stack::Stacker::new(primed, &output).execute();
+
+    match execution {
+        Ok(_) => {
+            println!("Success")
+        }
+        Err(err) => {
+            eprintln!("{:?}", err)
+        }
+    }
 
     "From rust".to_string()
 }
