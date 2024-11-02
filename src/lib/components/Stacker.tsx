@@ -72,6 +72,7 @@ const Stacker: React.FC<StackerProps> = ({
         positions: layout,
         sources: inputs.current,
         sliders: sliderValues,
+        output: selected,
       });
     }
   };
