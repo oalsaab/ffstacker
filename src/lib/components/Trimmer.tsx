@@ -1,9 +1,5 @@
 import { RangeSlider } from "@mantine/core";
 
-function valueLabelFormat(value: number) {
-  return new Date(value * 1000).toISOString().slice(11, 19);
-}
-
 const Trimmer: React.FC<TrimmerProps> = ({
   id,
   probed,
@@ -18,7 +14,7 @@ const Trimmer: React.FC<TrimmerProps> = ({
       min={0}
       max={probed.duration}
       step={5}
-      label={valueLabelFormat}
+      label={null}
       onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
     />
   );
