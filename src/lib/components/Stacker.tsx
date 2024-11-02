@@ -136,6 +136,9 @@ const Stacker: React.FC<StackerProps> = ({
                 handleFileUpload={handleFileUpload}
                 showSlider={showSliders[item.id]}
                 showMetadata={showMetadatas[item.id]}
+                sliderValue={
+                  sliderValues.find((obj) => obj.id === item.id) || null
+                }
               />
             </div>
           </div>

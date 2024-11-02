@@ -1,13 +1,35 @@
 import { open } from "@tauri-apps/api/dialog";
 import { MouseEvent } from "react";
-import { Stack, Group, ActionIcon, Tooltip } from "@mantine/core";
+import { Stack, Group, ActionIcon, Tooltip, Text } from "@mantine/core";
 import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
 import { videoExtensions } from "./constants";
+
+function trimFormat(value: number) {
+  return new Date(value * 1000).toISOString().slice(11, 19);
+}
+
+function trim(s: SliderValues | null): React.JSX.Element {
+  if (!s) {
+    return <></>;
+  }
+
+  let [from, to] = s.values;
+  let duration = to - from;
+
+  return (
+    <Stack justify="center" align="flex-start" gap="xs">
+      <Text size="sm">From: {trimFormat(from)}</Text>
+      <Text size="sm">To: {trimFormat(to)}</Text>
+      <Text size="sm">Duration: {trimFormat(duration)}</Text>
+    </Stack>
+  );
+}
 
 const Item: React.FC<ItemProps> = ({
   id,
   handleFileUpload,
   showSlider,
+  sliderValue,
   showMetadata,
 }) => {
   async function handler(_: MouseEvent<HTMLButtonElement>) {
@@ -45,6 +67,7 @@ const Item: React.FC<ItemProps> = ({
           </Tooltip>
         </Group>
         <div className="slider">{showSlider}</div>
+        {trim(sliderValue)}
       </Stack>
     </div>
   );

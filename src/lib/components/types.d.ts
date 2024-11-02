@@ -16,6 +16,7 @@ interface StackerProps {
 interface ItemProps {
   id: string;
   showSlider: React.JSX.Element;
+  sliderValue: SliderValues | null;
   showMetadata: React.JSX.Element;
   handleFileUpload: (id: string, file: string | string[]) => void;
 }
