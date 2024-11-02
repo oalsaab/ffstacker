@@ -1,8 +1,13 @@
+interface ElementMap {
+  [id: string]: React.JSX.Element;
+}
+
 interface StackerProps {
   items: Array<{ id: string }>;
   inputs: MutableRefObject<{ id: string; path: string }[]>;
-  showSliders: { [key: string]: JSX.Element };
+  showSliders: ElementMap;
   sliderValues: SliderValues[];
+  showMetadatas: ElementMap;
   addItem: () => void;
   resetItems: () => void;
   handleFileUpload: (id: string, file: string | string[]) => void;
@@ -10,7 +15,8 @@ interface StackerProps {
 
 interface ItemProps {
   id: string;
-  showSlider: JSX.Element;
+  showSlider: React.JSX.Element;
+  showMetadata: React.JSX.Element;
   handleFileUpload: (id: string, file: string | string[]) => void;
 }
 
@@ -18,6 +24,10 @@ interface TrimmerProps {
   id: string;
   probed: Probed;
   handleSliderChangeEnd: (id: string, value: [number, number]) => void;
+}
+
+interface MetadataProps {
+  probed: Probed;
 }
 
 interface SliderValues {

@@ -4,7 +4,12 @@ import { Stack, Group, ActionIcon, Tooltip } from "@mantine/core";
 import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
 import { videoExtensions } from "./constants";
 
-const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
+const Item: React.FC<ItemProps> = ({
+  id,
+  handleFileUpload,
+  showSlider,
+  showMetadata,
+}) => {
   async function handler(_: MouseEvent<HTMLButtonElement>) {
     const selected = await open({
       multiple: false,
@@ -39,6 +44,7 @@ const Item: React.FC<ItemProps> = ({ id, handleFileUpload, showSlider }) => {
           </Tooltip>
         </Group>
         <div className="slider">{showSlider}</div>
+        <div className="metadata">{showMetadata}</div>
       </Stack>
     </div>
   );

@@ -11,6 +11,7 @@ const Stacker: React.FC<StackerProps> = ({
   inputs,
   showSliders,
   sliderValues,
+  showMetadatas,
   handleFileUpload,
   addItem,
   resetItems,
@@ -134,6 +135,7 @@ const Stacker: React.FC<StackerProps> = ({
                 id={item.id}
                 handleFileUpload={handleFileUpload}
                 showSlider={showSliders[item.id]}
+                showMetadata={showMetadatas[item.id]}
               />
             </div>
           </div>

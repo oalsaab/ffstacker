@@ -1,34 +1,21 @@
 import { useState, useRef } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import {
-  RangeSlider,
-  HoverCard,
-  Stack,
-  Center,
-  Text,
-  Group,
-  ActionIcon,
-} from "@mantine/core";
+import { Center } from "@mantine/core";
 import "./App.css";
 import "gridstack/dist/gridstack.min.css";
 import "gridstack/dist/gridstack-extra.min.css";
 import "@mantine/core/styles.css";
-import { IconInfoCircle } from "@tabler/icons-react";
 
 import Stacker from "./lib/components/Stacker";
 import Trimmer from "./lib/components/Trimmer";
-
-function valueLabelFormat(value: number) {
-  return new Date(value * 1000).toISOString().slice(11, 19);
-}
+import Metadata from "./lib/components/Metadata";
 
 const StackManager: React.FC = () => {
   const initialItems = [{ id: "1" }, { id: "2" }];
   const [items, setItems] = useState(initialItems);
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
-  const [showSliders, setShowSlider] = useState<{ [key: string]: JSX.Element }>(
-    {},
-  );
+  const [showSliders, setShowSlider] = useState<ElementMap>({});
+  const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
 
@@ -41,6 +28,7 @@ const StackManager: React.FC = () => {
     setItems(initialItems);
     setShowSlider({});
     setSliderValue([]);
+    setShowMetadatas({});
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
@@ -67,8 +55,12 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
-    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
+    setShowMetadatas((prev) => ({
+      ...prev,
+      [id]: <Metadata probed={probed}></Metadata>,
+    }));
 
+    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
     setShowSlider((prev) => ({
       ...prev,
       [id]: (
@@ -88,6 +80,7 @@ const StackManager: React.FC = () => {
       resetItems={resetItems}
       showSliders={showSliders}
       sliderValues={sliderValues}
+      showMetadatas={showMetadatas}
       inputs={inputs}
       handleFileUpload={handleFileUpload}
     />
