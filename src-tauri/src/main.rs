@@ -2,14 +2,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod stack;
+use stack::Execution;
 
 // enum Process {
-//     InProgress,
+//     Running,
 //     Complete,
+//     Failed,
 //     UserError,
 // }
 
-#[tauri::command]
+// Command needs to be async to handle "hanging" of GUI
+#[tauri::command(async)]
 fn process(
     positions: Vec<stack::Position>,
     sources: Vec<stack::Source>,
@@ -29,7 +32,9 @@ fn process(
         println!("{}", item)
     }
 
-    // stack::Stacker::new(primed).execute().unwrap();
+    // Handle errs? (Wrap process in red color on failure?)
+    // Emit process to GUI?
+    stack::Stacker::new(primed).execute().unwrap();
 
     "From rust".to_string()
 }
@@ -38,9 +43,19 @@ fn process(
 fn probe(input: String) -> stack::Probed {
     println!("Input received: {}", input);
 
+    // Using default is misleading GUI frontend on any errs?
     match stack::Probe::new(&input).execute() {
-        Ok(stdout) => stack::Probed::build(&stdout).unwrap_or_default(),
-        Err(_) => stack::Probed::default(),
+        Ok(stdout) => match stack::Probed::build(&stdout) {
+            Ok(probed) => probed,
+            Err(e) => {
+                eprintln!("Failed to build probed output: {e}");
+                stack::Probed::default()
+            }
+        },
+        Err(_) => {
+            eprintln!("Failed to execute FFprobe");
+            stack::Probed::default()
+        }
     }
 }
 

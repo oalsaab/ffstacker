@@ -1,8 +1,11 @@
 use super::priming::{Duration, Primed};
+use super::{Execution, Handle};
 
+use core::fmt;
+use std::ffi::OsStr;
 use std::fmt::Write;
-use std::io;
-use std::process::{Child, Command};
+use std::process::Command;
+
 pub trait StackIdentity {
     fn identify(&self) -> Stack;
 }
@@ -40,7 +43,7 @@ impl Xstack {
 
     fn compose(&self) -> String {
         format!(
-            "'{}xstack=inputs={}:layout={}[v]' -map '[v]'",
+            "{}xstack=inputs={}:layout='{}'[v]",
             self.gen_labels(),
             self.n,
             self.gen_layout()
@@ -82,6 +85,7 @@ impl Xstack {
     }
 }
 
+/// Wrapper for FFmpeg stack execution
 pub struct Stacker {
     stack: Stack,
     primed: Vec<Primed>,
@@ -97,54 +101,62 @@ impl Stacker {
         }
     }
 
-    fn arg_inputs(&mut self) -> &mut Command {
+    fn arg_trimmings(&mut self) -> &mut Command {
         for prime in self.primed.iter() {
             self.ffmpeg
-                .args(["-i", &prime.path])
                 .args(["-ss", &prime.start.as_ts()])
-                .args(["-to", &prime.end.as_ts()]);
+                .args(["-to", &prime.end.as_ts()])
+                .args(["-i", &prime.path]);
         }
 
         &mut self.ffmpeg
     }
+}
 
-    fn stack(&mut self) {
+impl Execution for Stacker {
+    // FFmpeg pipes output to stderr
+    const HANDLE: Handle = Handle::Err;
+
+    fn assemble(&mut self) -> &mut Command {
         let n = self.primed.len();
 
         match self.stack {
             Stack::Horizontal => {
                 self.primed.sort_by_key(|f| f.x);
-                self.arg_inputs()
+                self.arg_trimmings()
                     .arg("-filter_complex")
                     .arg(format!("hstack=inputs={}", n));
             }
             Stack::Vertical => {
                 self.primed.sort_by_key(|f| f.y);
-                self.arg_inputs()
+                self.arg_trimmings()
                     .arg("-filter_complex")
                     .arg(format!("vstack=inputs={}", n));
             }
             Stack::X => {
                 self.primed.sort_by_key(|f| (f.y, f.x));
-                self.arg_inputs()
+                self.arg_trimmings()
                     .arg("-filter_complex")
-                    .arg(Xstack::new(n).compose());
+                    .arg(Xstack::new(n).compose())
+                    .args(["-map", "[v]"]);
             } // Row Major Order Mosaic
         }
 
-        self.ffmpeg.arg("output.mkv");
+        // todo: Allow user to set output & filename?
+        self.ffmpeg.arg("output.mkv")
     }
+}
 
-    pub fn execute(&mut self) -> io::Result<Child> {
-        self.stack();
-        self.ffmpeg.spawn()
+impl fmt::Display for Stacker {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let args: Vec<&OsStr> = self.ffmpeg.get_args().collect();
+        write!(f, "Args: {:#?}\nIdentity: {:#?}", args, self.stack)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ffi::OsStr;
 
     fn vstack() -> Vec<Primed> {
         vec![
@@ -203,16 +215,14 @@ mod tests {
     #[test]
     fn it_generates_labels() {
         let result = Xstack::new(4).gen_labels();
-        let expected = "[0:v][1:v][2:v][3:v]".to_string();
+        let expected = "[0:v][1:v][2:v][3:v]";
         assert_eq!(result, expected)
     }
 
     #[test]
     fn it_xstack_composes() {
         let result = Xstack::new(4).compose();
-        let expected =
-            "'[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]' -map '[v]'"
-                .to_string();
+        let expected = "[0:v][1:v][2:v][3:v]xstack=inputs=4:layout='0_0|w0_0|0_h0|w0_h0'[v]";
         assert_eq!(result, expected)
     }
 
