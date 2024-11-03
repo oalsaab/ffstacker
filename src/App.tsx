@@ -55,6 +55,11 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
+    // On upload click don't show sliders
+    // Instead show a button for TRIM (scissors)
+    // If TRIM is clicked, handle it with state
+    // FileUpload fn therefore doesn't need setSlider logic?'
+
     setShowMetadatas((prev) => ({
       ...prev,
       [id]: <Metadata probed={probed}></Metadata>,

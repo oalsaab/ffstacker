@@ -108,10 +108,12 @@ impl Stacker {
 
     fn arg_trimmings(&mut self) -> &mut Command {
         for prime in self.primed.iter() {
-            self.ffmpeg
-                .args(["-ss", &prime.start.as_ts()])
-                .args(["-to", &prime.end.as_ts()])
-                .args(["-i", &prime.path]);
+            // Range sliders enforces that start and end always exist together
+            if let (Some(start), Some(end)) = (prime.start, prime.end) {
+                self.ffmpeg.args(["-ss", &start.as_ts()]);
+                self.ffmpeg.args(["to", &end.as_ts()]);
+            }
+            self.ffmpeg.args(["-i", &prime.path]);
         }
 
         &mut self.ffmpeg
