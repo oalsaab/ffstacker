@@ -1,4 +1,4 @@
-import { ActionIcon, RangeSlider } from "@mantine/core";
+import { ActionIcon, RangeSlider, Text, Stack } from "@mantine/core";
 import { IconScissors } from "@tabler/icons-react";
 import { iconStyles, actionStyles } from "../styles";
 
@@ -32,5 +32,22 @@ export const Trimmer: React.FC<TrimmerProps> = ({
       label={null}
       onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
     />
+  );
+};
+
+function trimFormat(value: number) {
+  return new Date(value * 1000).toISOString().slice(11, 19);
+}
+
+export const TrimmerText: React.FC<TrimmerTextProps> = ({ value }) => {
+  let [from, to] = value;
+  let duration = to - from;
+
+  return (
+    <Stack align="flex-start" gap="xs">
+      <Text size="sm">From: {trimFormat(from)}</Text>
+      <Text size="sm">To: {trimFormat(to)}</Text>
+      <Text size="sm">Duration: {trimFormat(duration)}</Text>
+    </Stack>
   );
 };

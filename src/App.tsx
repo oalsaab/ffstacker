@@ -7,7 +7,7 @@ import "gridstack/dist/gridstack-extra.min.css";
 import "@mantine/core/styles.css";
 
 import Stacker from "./lib/components/Stacker";
-import { Trimmer, TrimmerButton } from "./lib/components/Trimmer";
+import { Trimmer, TrimmerButton, TrimmerText } from "./lib/components/Trimmer";
 import Metadata from "./lib/components/Metadata";
 
 const StackManager: React.FC = () => {
@@ -17,6 +17,7 @@ const StackManager: React.FC = () => {
   const [showSliders, setShowSlider] = useState<ElementMap>({});
   const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
   const [showTrimButtons, setShowTrimButtons] = useState<ElementMap>({});
+  const [trimTexts, setTrimTexts] = useState<ElementMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
 
@@ -31,6 +32,7 @@ const StackManager: React.FC = () => {
     setSliderValue([]);
     setShowMetadatas({});
     setShowTrimButtons({});
+    setTrimTexts({});
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
@@ -39,6 +41,11 @@ const StackManager: React.FC = () => {
         slider.id === id ? { ...slider, values: value } : slider,
       ),
     );
+
+    setTrimTexts((prev) => ({
+      ...prev,
+      [id]: <TrimmerText id={id} value={value}></TrimmerText>,
+    }));
   };
 
   const handleTrimButton = (id: string, probed: Probed) => {
@@ -71,6 +78,20 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
+    // Clear out sliders on new upload
+    setShowSlider((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: _, ...updated } = prev;
+      return updated;
+    });
+
+    // Clear out trim text on new upload
+    setTrimTexts((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: _, ...updated } = prev;
+      return updated;
+    });
+
     setShowMetadatas((prev) => ({
       ...prev,
       [id]: <Metadata probed={probed}></Metadata>,
@@ -95,6 +116,7 @@ const StackManager: React.FC = () => {
       resetItems={resetItems}
       showSliders={showSliders}
       sliderValues={sliderValues}
+      trimTexts={trimTexts}
       showMetadatas={showMetadatas}
       showTrimButtons={showTrimButtons}
       inputs={inputs}

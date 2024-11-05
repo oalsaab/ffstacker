@@ -12,6 +12,7 @@ const Stacker: React.FC<StackerProps> = ({
   inputs,
   showSliders,
   sliderValues,
+  trimTexts,
   showMetadatas,
   showTrimButtons,
   handleFileUpload,
@@ -136,9 +137,7 @@ const Stacker: React.FC<StackerProps> = ({
                 showSlider={showSliders[item.id]}
                 showMetadata={showMetadatas[item.id]}
                 showTrimButton={showTrimButtons[item.id]}
-                sliderValue={
-                  sliderValues.find((obj) => obj.id === item.id) || null
-                }
+                trimText={trimTexts[item.id]}
               />
             </div>
           </div>
