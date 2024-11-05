@@ -5,6 +5,7 @@ import { Button, Group, Tooltip } from "@mantine/core";
 import { GridStack } from "gridstack";
 import { IconCirclePlus, IconReload } from "@tabler/icons-react";
 import Item from "./Item";
+import { actionStyles } from "../styles";
 
 const Stacker: React.FC<StackerProps> = ({
   items,
@@ -84,8 +85,7 @@ const Stacker: React.FC<StackerProps> = ({
       return (
         <Tooltip label="A minimum of 2 inputs is required for processing!">
           <Button
-            variant="outline"
-            color="cyan"
+            {...actionStyles}
             data-disabled
             onClick={(event) => event.preventDefault()}
           >
@@ -96,7 +96,7 @@ const Stacker: React.FC<StackerProps> = ({
     }
 
     return (
-      <Button variant="outline" color="cyan" onClick={processStack}>
+      <Button {...actionStyles} onClick={processStack}>
         Process
       </Button>
     );
@@ -106,8 +106,7 @@ const Stacker: React.FC<StackerProps> = ({
     <div className="controlled-container">
       <Group justify="center">
         <Button
-          variant="outline"
-          color="cyan"
+          {...actionStyles}
           rightSection={<IconCirclePlus />}
           onClick={addItem}
         >
@@ -115,8 +114,7 @@ const Stacker: React.FC<StackerProps> = ({
         </Button>
         <div>{processButton()}</div>
         <Button
-          variant="outline"
-          color="cyan"
+          {...actionStyles}
           rightSection={<IconReload />}
           onClick={resetItems}
         >

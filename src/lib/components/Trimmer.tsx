@@ -1,5 +1,6 @@
 import { ActionIcon, RangeSlider } from "@mantine/core";
 import { IconScissors } from "@tabler/icons-react";
+import { iconStyles, actionStyles } from "../styles";
 
 export const TrimmerButton: React.FC<TrimmerButtonProps> = ({
   id,
@@ -7,12 +8,8 @@ export const TrimmerButton: React.FC<TrimmerButtonProps> = ({
   handleTrimButton,
 }) => {
   return (
-    <ActionIcon
-      variant="outline"
-      color="cyan"
-      onClick={() => handleTrimButton(id, probed)}
-    >
-      <IconScissors style={{ width: "70%", height: "70%" }} stroke={1.5} />
+    <ActionIcon {...actionStyles} onClick={() => handleTrimButton(id, probed)}>
+      <IconScissors {...iconStyles} />
     </ActionIcon>
   );
 };

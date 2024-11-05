@@ -1,14 +1,14 @@
-import { HoverCard, Text, Group, ActionIcon } from "@mantine/core";
-
-import { IconInfoSquare } from "@tabler/icons-react";
+import { ActionIcon, Group, HoverCard, Text } from "@mantine/core";
+import { IconFileInfo } from "@tabler/icons-react";
+import { actionStyles, iconStyles } from "../styles";
 
 const Metadata: React.FC<MetadataProps> = ({ probed }) => {
   return (
     <Group justify="center">
       <HoverCard shadow="md">
         <HoverCard.Target>
-          <ActionIcon variant="transparent">
-            <IconInfoSquare />
+          <ActionIcon {...actionStyles}>
+            <IconFileInfo {...iconStyles} />
           </ActionIcon>
         </HoverCard.Target>
         <HoverCard.Dropdown>

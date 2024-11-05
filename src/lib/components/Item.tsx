@@ -3,6 +3,7 @@ import { MouseEvent } from "react";
 import { Stack, Group, ActionIcon, Tooltip, Text } from "@mantine/core";
 import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
 import { videoExtensions } from "./constants";
+import { iconStyles, actionStyles } from "../styles";
 
 function trimFormat(value: number) {
   return new Date(value * 1000).toISOString().slice(11, 19);
@@ -48,27 +49,22 @@ const Item: React.FC<ItemProps> = ({
     <div className="grid-content">
       <Stack justify="center" gap="md">
         <Group justify="space-between">
-          <ActionIcon variant="default">
+          <ActionIcon {...actionStyles}>
             <IconArrowsMove
-              style={{ width: "70%", height: "70%" }}
-              stroke={1.5}
+              {...iconStyles}
+              // Class header required exactly as is for gridstack to work
               className="drag-header"
             ></IconArrowsMove>
           </ActionIcon>
-          <div className="metadata">{showMetadata}</div>
-        </Group>
-        <Group justify="center">
+          {showTrimButton}
+          {showMetadata}
           <Tooltip label="Click to select a video file to stack">
-            <ActionIcon variant="outline" color="cyan" onClick={handler}>
-              <IconUpload
-                style={{ width: "70%", height: "70%" }}
-                stroke={1.5}
-              />
+            <ActionIcon {...actionStyles} onClick={handler}>
+              <IconUpload {...iconStyles} />
             </ActionIcon>
           </Tooltip>
-          {showTrimButton}
         </Group>
-        <div className="slider">{showSlider}</div>
+        {showSlider}
         {trim(sliderValue)}
       </Stack>
     </div>
