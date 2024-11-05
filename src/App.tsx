@@ -7,7 +7,7 @@ import "gridstack/dist/gridstack-extra.min.css";
 import "@mantine/core/styles.css";
 
 import Stacker from "./lib/components/Stacker";
-import Trimmer from "./lib/components/Trimmer";
+import { Trimmer, TrimmerButton } from "./lib/components/Trimmer";
 import Metadata from "./lib/components/Metadata";
 
 const StackManager: React.FC = () => {
@@ -16,6 +16,7 @@ const StackManager: React.FC = () => {
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
   const [showSliders, setShowSlider] = useState<ElementMap>({});
   const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
+  const [showTrimmerButtons, setShowTrimmerButtons] = useState<ElementMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
 
@@ -29,6 +30,7 @@ const StackManager: React.FC = () => {
     setShowSlider({});
     setSliderValue([]);
     setShowMetadatas({});
+    setShowTrimmerButtons({});
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
@@ -37,6 +39,20 @@ const StackManager: React.FC = () => {
         slider.id === id ? { ...slider, values: value } : slider,
       ),
     );
+  };
+
+  const handleTrimButton = (id: string, probed: Probed) => {
+    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
+    setShowSlider((prev) => ({
+      ...prev,
+      [id]: (
+        <Trimmer
+          id={id}
+          probed={probed}
+          handleSliderChangeEnd={handleSliderChangeEnd}
+        ></Trimmer>
+      ),
+    }));
   };
 
   const handleFileUpload = async (id: string, file: string | string[]) => {
@@ -55,25 +71,19 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
-    // On upload click don't show sliders
-    // Instead show a button for TRIM (scissors)
-    // If TRIM is clicked, handle it with state
-    // FileUpload fn therefore doesn't need setSlider logic?'
-
     setShowMetadatas((prev) => ({
       ...prev,
       [id]: <Metadata probed={probed}></Metadata>,
     }));
 
-    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
-    setShowSlider((prev) => ({
+    setShowTrimmerButtons((prev) => ({
       ...prev,
       [id]: (
-        <Trimmer
+        <TrimmerButton
           id={id}
           probed={probed}
-          handleSliderChangeEnd={handleSliderChangeEnd}
-        ></Trimmer>
+          handleTrimButton={handleTrimButton}
+        ></TrimmerButton>
       ),
     }));
   };
@@ -86,6 +96,7 @@ const StackManager: React.FC = () => {
       showSliders={showSliders}
       sliderValues={sliderValues}
       showMetadatas={showMetadatas}
+      showTrimmerButtons={showTrimmerButtons}
       inputs={inputs}
       handleFileUpload={handleFileUpload}
     />

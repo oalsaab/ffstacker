@@ -8,6 +8,7 @@ interface StackerProps {
   showSliders: ElementMap;
   sliderValues: SliderValues[];
   showMetadatas: ElementMap;
+  showTrimmerButtons: ElementMap;
   addItem: () => void;
   resetItems: () => void;
   handleFileUpload: (id: string, file: string | string[]) => void;
@@ -18,7 +19,14 @@ interface ItemProps {
   showSlider: React.JSX.Element;
   sliderValue: SliderValues | null;
   showMetadata: React.JSX.Element;
+  showTrimmerButton: React.JSX.Element;
   handleFileUpload: (id: string, file: string | string[]) => void;
+}
+
+interface TrimmerButtonProps {
+  id: string;
+  probed: Probed;
+  handleTrimButton: (id: string, probed: Probed) => void;
 }
 
 interface TrimmerProps {

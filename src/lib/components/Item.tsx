@@ -8,12 +8,12 @@ function trimFormat(value: number) {
   return new Date(value * 1000).toISOString().slice(11, 19);
 }
 
-function trim(s: SliderValues | null): React.JSX.Element {
-  if (!s) {
+function trim(slider: SliderValues | null): React.JSX.Element {
+  if (!slider) {
     return <></>;
   }
 
-  let [from, to] = s.values;
+  let [from, to] = slider.values;
   let duration = to - from;
 
   return (
@@ -31,6 +31,7 @@ const Item: React.FC<ItemProps> = ({
   showSlider,
   sliderValue,
   showMetadata,
+  showTrimmerButton,
 }) => {
   async function handler(_: MouseEvent<HTMLButtonElement>) {
     const selected = await open({
@@ -65,6 +66,7 @@ const Item: React.FC<ItemProps> = ({
               />
             </ActionIcon>
           </Tooltip>
+          {showTrimmerButton}
         </Group>
         <div className="slider">{showSlider}</div>
         {trim(sliderValue)}
