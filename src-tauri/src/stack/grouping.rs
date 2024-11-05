@@ -25,20 +25,20 @@ impl Identifiable for Source {
     }
 }
 
-#[derive(Default, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct Position {
     id: String,
     x: u8,
     y: u8,
 }
 
-#[derive(Default, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct Source {
     id: String,
     path: String,
 }
 
-#[derive(Default, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct Slider {
     id: String,
     values: [f64; 2],

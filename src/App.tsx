@@ -62,6 +62,26 @@ const StackManager: React.FC = () => {
     }));
   };
 
+  const clearSlider = (id: string) => {
+    setShowSlider((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+  };
+
+  const clearText = (id: string) => {
+    setTrimTexts((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+  };
+
+  const clearSliderValue = (id: string) => {
+    setSliderValue((prev) => prev.filter((slider) => slider.id !== id));
+  };
+
   const handleFileUpload = async (id: string, file: string | string[]) => {
     if (Array.isArray(file)) {
       return;
@@ -78,19 +98,10 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
-    // Clear out sliders on new upload
-    setShowSlider((prev) => {
-      if (!(id in prev)) return prev;
-      const { [id]: _, ...updated } = prev;
-      return updated;
-    });
-
-    // Clear out trim text on new upload
-    setTrimTexts((prev) => {
-      if (!(id in prev)) return prev;
-      const { [id]: _, ...updated } = prev;
-      return updated;
-    });
+    // Clear sliders, values & text on new upload
+    clearSlider(id);
+    clearText(id);
+    clearSliderValue(id);
 
     setShowMetadatas((prev) => ({
       ...prev,
