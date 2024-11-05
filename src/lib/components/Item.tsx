@@ -31,7 +31,7 @@ const Item: React.FC<ItemProps> = ({
   showSlider,
   sliderValue,
   showMetadata,
-  showTrimmerButton,
+  showTrimButton,
 }) => {
   async function handler(_: MouseEvent<HTMLButtonElement>) {
     const selected = await open({
@@ -66,7 +66,7 @@ const Item: React.FC<ItemProps> = ({
               />
             </ActionIcon>
           </Tooltip>
-          {showTrimmerButton}
+          {showTrimButton}
         </Group>
         <div className="slider">{showSlider}</div>
         {trim(sliderValue)}

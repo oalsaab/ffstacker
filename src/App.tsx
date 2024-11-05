@@ -16,7 +16,7 @@ const StackManager: React.FC = () => {
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
   const [showSliders, setShowSlider] = useState<ElementMap>({});
   const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
-  const [showTrimmerButtons, setShowTrimmerButtons] = useState<ElementMap>({});
+  const [showTrimButtons, setShowTrimButtons] = useState<ElementMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
 
@@ -30,7 +30,7 @@ const StackManager: React.FC = () => {
     setShowSlider({});
     setSliderValue([]);
     setShowMetadatas({});
-    setShowTrimmerButtons({});
+    setShowTrimButtons({});
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
@@ -76,7 +76,7 @@ const StackManager: React.FC = () => {
       [id]: <Metadata probed={probed}></Metadata>,
     }));
 
-    setShowTrimmerButtons((prev) => ({
+    setShowTrimButtons((prev) => ({
       ...prev,
       [id]: (
         <TrimmerButton
@@ -96,7 +96,7 @@ const StackManager: React.FC = () => {
       showSliders={showSliders}
       sliderValues={sliderValues}
       showMetadatas={showMetadatas}
-      showTrimmerButtons={showTrimmerButtons}
+      showTrimButtons={showTrimButtons}
       inputs={inputs}
       handleFileUpload={handleFileUpload}
     />
