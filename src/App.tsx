@@ -11,8 +11,7 @@ import { Trimmer, TrimmerButton, TrimmerText } from "./lib/components/Trimmer";
 import Metadata from "./lib/components/Metadata";
 
 const StackManager: React.FC = () => {
-  const initialItems = [{ id: "1" }, { id: "2" }];
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState<{ id: string }[]>([]);
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
   const [showSliders, setShowSlider] = useState<ElementMap>({});
   const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
@@ -27,7 +26,7 @@ const StackManager: React.FC = () => {
 
   const resetItems = () => {
     inputs.current = [];
-    setItems(initialItems);
+    setItems([]);
     setShowSlider({});
     setSliderValue([]);
     setShowMetadatas({});
@@ -120,6 +119,31 @@ const StackManager: React.FC = () => {
     }));
   };
 
+  const handleClearButton = (id: string) => {
+    // Clear things from state first
+    clearSlider(id);
+    clearText(id);
+    clearSliderValue(id);
+
+    // Clear buttons
+    setShowMetadatas((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+
+    setShowTrimButtons((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+
+    // Remove the item from grid
+    setItems((items) => items.filter((item) => item.id !== id));
+    // Remove it from registration
+    inputs.current = inputs.current.filter((input) => input.id !== id);
+  };
+
   return (
     <Stacker
       items={items}
@@ -132,6 +156,7 @@ const StackManager: React.FC = () => {
       showTrimButtons={showTrimButtons}
       inputs={inputs}
       handleFileUpload={handleFileUpload}
+      handleClearButton={handleClearButton}
     />
   );
 };

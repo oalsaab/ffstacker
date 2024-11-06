@@ -13,6 +13,7 @@ interface StackerProps {
   addItem: () => void;
   resetItems: () => void;
   handleFileUpload: (id: string, file: string | string[]) => void;
+  handleClearButton: (id: string) => void;
 }
 
 interface ItemProps {
@@ -22,6 +23,7 @@ interface ItemProps {
   showMetadata: React.JSX.Element;
   showTrimButton: React.JSX.Element;
   handleFileUpload: (id: string, file: string | string[]) => void;
+  handleClearButton: (id: string) => void;
 }
 
 interface TrimmerButtonProps {

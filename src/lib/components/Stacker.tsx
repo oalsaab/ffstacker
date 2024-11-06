@@ -16,6 +16,7 @@ const Stacker: React.FC<StackerProps> = ({
   showMetadatas,
   showTrimButtons,
   handleFileUpload,
+  handleClearButton,
   addItem,
   resetItems,
 }) => {
@@ -134,6 +135,7 @@ const Stacker: React.FC<StackerProps> = ({
               <Item
                 id={item.id}
                 handleFileUpload={handleFileUpload}
+                handleClearButton={handleClearButton}
                 showSlider={showSliders[item.id]}
                 showMetadata={showMetadatas[item.id]}
                 showTrimButton={showTrimButtons[item.id]}

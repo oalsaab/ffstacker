@@ -1,13 +1,14 @@
 import { open } from "@tauri-apps/api/dialog";
 import { MouseEvent } from "react";
 import { Stack, Group, ActionIcon, Tooltip } from "@mantine/core";
-import { IconUpload, IconArrowsMove } from "@tabler/icons-react";
+import { IconUpload, IconArrowsMove, IconX } from "@tabler/icons-react";
 import { videoExtensions } from "./constants";
 import { iconStyles, actionStyles } from "../styles";
 
 const Item: React.FC<ItemProps> = ({
   id,
   handleFileUpload,
+  handleClearButton,
   showSlider,
   trimText,
   showMetadata,
@@ -27,7 +28,7 @@ const Item: React.FC<ItemProps> = ({
   return (
     <div className="grid-content">
       <Stack justify="center" gap="md">
-        <Group justify="space-between">
+        <Group justify="space-between" gap="xs">
           <ActionIcon {...actionStyles}>
             <IconArrowsMove
               {...iconStyles}
@@ -42,6 +43,13 @@ const Item: React.FC<ItemProps> = ({
               <IconUpload {...iconStyles} />
             </ActionIcon>
           </Tooltip>
+          <ActionIcon
+            variant="outline"
+            color="pink"
+            onClick={() => handleClearButton(id)}
+          >
+            <IconX {...iconStyles} />
+          </ActionIcon>
         </Group>
         {showSlider}
         {trimText}
