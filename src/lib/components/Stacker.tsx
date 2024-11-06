@@ -1,4 +1,5 @@
 import { useEffect, useRef, createRef, RefObject } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 import { Button, Group, Tooltip } from "@mantine/core";
@@ -6,6 +7,7 @@ import { GridStack } from "gridstack";
 import { IconCirclePlus, IconReload } from "@tabler/icons-react";
 import Item from "./Item";
 import { actionStyles } from "../styles";
+import { useDisclosure } from "@mantine/hooks";
 
 const Stacker: React.FC<StackerProps> = ({
   items,
@@ -83,6 +85,9 @@ const Stacker: React.FC<StackerProps> = ({
   };
 
   const processButton = () => {
+    // For whatever reason this must be declared before any if conditions
+    const [loading, { open, close }] = useDisclosure();
+
     if (inputs.current.length < 2) {
       return (
         <Tooltip label="A minimum of 2 inputs is required for processing!">
@@ -97,8 +102,19 @@ const Stacker: React.FC<StackerProps> = ({
       );
     }
 
+    const handleProcessStack = async () => {
+      open(); // Start loading
+      await processStack();
+      close(); // Stop loading after completion
+    };
+
     return (
-      <Button {...actionStyles} onClick={processStack}>
+      <Button
+        loading={loading}
+        loaderProps={{ type: "dots" }}
+        {...actionStyles}
+        onClick={handleProcessStack}
+      >
         Process
       </Button>
     );
@@ -114,7 +130,7 @@ const Stacker: React.FC<StackerProps> = ({
         >
           Add
         </Button>
-        <div>{processButton()}</div>
+        {processButton()}
         <Button
           {...actionStyles}
           rightSection={<IconReload />}
