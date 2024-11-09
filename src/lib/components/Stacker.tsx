@@ -1,4 +1,4 @@
-import { useEffect, useRef, createRef, RefObject } from "react";
+import { useEffect, useRef, createRef, RefObject, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 import { Button, Group, Tooltip } from "@mantine/core";
@@ -103,7 +103,7 @@ const Stacker: React.FC<StackerProps> = ({
 
     const handleProcessStack = async () => {
       open(); // Start loading
-      await processStack();
+      const _ = await processStack();
       close(); // Stop loading after completion
     };
 
