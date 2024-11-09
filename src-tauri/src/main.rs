@@ -16,13 +16,14 @@ use stack::Execution;
 fn process(
     positions: Vec<stack::Position>,
     sources: Vec<stack::Source>,
-    sliders: Vec<stack::Slider>,
+    sliders: Vec<Option<stack::Slider>>,
+    output: String,
 ) -> String {
     // Clean call ensures no empty items on grid.
     let primed = stack::Group::new()
         .add(positions)
         .add(sources)
-        .add(sliders)
+        .add_optional(sliders)
         .clean()
         .prime();
 
@@ -34,7 +35,16 @@ fn process(
 
     // Handle errs? (Wrap process in red color on failure?)
     // Emit process to GUI?
-    stack::Stacker::new(primed).execute().unwrap();
+    let execution = stack::Stacker::new(primed, &output).execute();
+
+    match execution {
+        Ok(_) => {
+            println!("Success")
+        }
+        Err(err) => {
+            eprintln!("{:?}", err)
+        }
+    }
 
     "From rust".to_string()
 }

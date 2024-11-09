@@ -25,20 +25,20 @@ impl Identifiable for Source {
     }
 }
 
-#[derive(Default, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct Position {
     id: String,
     x: u8,
     y: u8,
 }
 
-#[derive(Default, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct Source {
     id: String,
     path: String,
 }
 
-#[derive(Default, Deserialize, Clone)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct Slider {
     id: String,
     values: [f64; 2],
@@ -80,14 +80,31 @@ impl Group {
         }
     }
 
+    fn push_value<T>(&mut self, value: T)
+    where
+        T: Identifiable + Into<Inputs>,
+    {
+        let id = value.id().to_string();
+        self.group.entry(id).or_default().push(value.into())
+    }
+
     pub fn add<T>(&mut self, values: Vec<T>) -> &mut Group
     where
         T: Identifiable + Into<Inputs>,
     {
-        for value in values {
-            let id = value.id().to_string();
-            self.group.entry(id).or_default().push(value.into())
-        }
+        values.into_iter().for_each(|value| {
+            self.push_value(value);
+        });
+        self
+    }
+
+    pub fn add_optional<T>(&mut self, values: Vec<Option<T>>) -> &mut Group
+    where
+        T: Identifiable + Into<Inputs>,
+    {
+        values.into_iter().flatten().for_each(|value| {
+            self.push_value(value);
+        });
 
         self
     }
@@ -119,8 +136,8 @@ impl Group {
                         }
                         Inputs::Slider(slider) => {
                             let [start, end] = slider.values;
-                            primed.start = start as u32;
-                            primed.end = end as u32;
+                            primed.start = Some(start as u32);
+                            primed.end = Some(end as u32);
                         }
                     }
                 }
@@ -146,10 +163,10 @@ mod tests {
                 id: String::from("1"),
                 path: String::from("x.mov"),
             }])
-            .add(vec![Slider {
+            .add_optional(vec![Some(Slider {
                 id: String::from("1"),
                 values: [10.0, 20.0],
-            }])
+            })])
             .clean()
             .prime();
 
@@ -162,8 +179,8 @@ mod tests {
                 x: 0,
                 y: 1,
                 path: String::from("x.mov"),
-                start: 10,
-                end: 20
+                start: Some(10),
+                end: Some(20)
             }
         )
     }

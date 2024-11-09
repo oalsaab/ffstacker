@@ -1,16 +1,23 @@
-import { useEffect, useRef, createRef, RefObject } from "react";
+import { useEffect, useRef, createRef, RefObject, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
 import { Button, Group, Tooltip } from "@mantine/core";
 import { GridStack } from "gridstack";
 import { IconCirclePlus, IconReload } from "@tabler/icons-react";
 import Item from "./Item";
+import { actionStyles } from "../styles";
+import { useDisclosure } from "@mantine/hooks";
 
 const Stacker: React.FC<StackerProps> = ({
   items,
   inputs,
   showSliders,
   sliderValues,
+  trimTexts,
+  showMetadatas,
+  showTrimButtons,
   handleFileUpload,
+  handleClearButton,
   addItem,
   resetItems,
 }) => {
@@ -36,7 +43,7 @@ const Stacker: React.FC<StackerProps> = ({
           column: 4,
           handle: ".drag-header",
         },
-        ".controlled"
+        ".controlled",
       );
 
     const grid = gridRef.current;
@@ -57,22 +64,34 @@ const Stacker: React.FC<StackerProps> = ({
   const processStack = async () => {
     const layout = gridRef.current?.save();
 
-    if (layout) {
+    const selected = await open({
+      multiple: false,
+      directory: true,
+    });
+
+    if (Array.isArray(selected)) {
+      return;
+    }
+
+    if (selected && layout) {
       let result = await invoke("process", {
         positions: layout,
         sources: inputs.current,
         sliders: sliderValues,
+        output: selected,
       });
     }
   };
 
   const processButton = () => {
+    // For whatever reason this must be declared before any if conditions
+    const [loading, { open, close }] = useDisclosure();
+
     if (inputs.current.length < 2) {
       return (
         <Tooltip label="A minimum of 2 inputs is required for processing!">
           <Button
-            variant="outline"
-            color="cyan"
+            {...actionStyles}
             data-disabled
             onClick={(event) => event.preventDefault()}
           >
@@ -82,8 +101,19 @@ const Stacker: React.FC<StackerProps> = ({
       );
     }
 
+    const handleProcessStack = async () => {
+      open(); // Start loading
+      const _ = await processStack();
+      close(); // Stop loading after completion
+    };
+
     return (
-      <Button variant="outline" color="cyan" onClick={processStack}>
+      <Button
+        loading={loading}
+        loaderProps={{ type: "dots" }}
+        {...actionStyles}
+        onClick={handleProcessStack}
+      >
         Process
       </Button>
     );
@@ -93,17 +123,15 @@ const Stacker: React.FC<StackerProps> = ({
     <div className="controlled-container">
       <Group justify="center">
         <Button
-          variant="outline"
-          color="cyan"
+          {...actionStyles}
           rightSection={<IconCirclePlus />}
           onClick={addItem}
         >
           Add
         </Button>
-        <div>{processButton()}</div>
+        {processButton()}
         <Button
-          variant="outline"
-          color="cyan"
+          {...actionStyles}
           rightSection={<IconReload />}
           onClick={resetItems}
         >
@@ -122,7 +150,11 @@ const Stacker: React.FC<StackerProps> = ({
               <Item
                 id={item.id}
                 handleFileUpload={handleFileUpload}
+                handleClearButton={handleClearButton}
                 showSlider={showSliders[item.id]}
+                showMetadata={showMetadatas[item.id]}
+                showTrimButton={showTrimButtons[item.id]}
+                trimText={trimTexts[item.id]}
               />
             </div>
           </div>

@@ -1,33 +1,22 @@
 import { useState, useRef } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import {
-  RangeSlider,
-  HoverCard,
-  Stack,
-  Center,
-  Text,
-  Group,
-  ActionIcon,
-} from "@mantine/core";
+import { Center } from "@mantine/core";
 import "./App.css";
 import "gridstack/dist/gridstack.min.css";
 import "gridstack/dist/gridstack-extra.min.css";
 import "@mantine/core/styles.css";
-import { IconInfoCircle } from "@tabler/icons-react";
 
 import Stacker from "./lib/components/Stacker";
-
-function valueLabelFormat(value: number) {
-  return new Date(value * 1000).toISOString().slice(11, 19);
-}
+import { Trimmer, TrimmerButton, TrimmerText } from "./lib/components/Trimmer";
+import Metadata from "./lib/components/Metadata";
 
 const StackManager: React.FC = () => {
-  const initialItems = [{ id: "1" }, { id: "2" }];
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState<{ id: string }[]>([]);
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
-  const [showSliders, setShowSlider] = useState<{ [key: string]: JSX.Element }>(
-    {}
-  );
+  const [showSliders, setShowSlider] = useState<ElementMap>({});
+  const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
+  const [showTrimButtons, setShowTrimButtons] = useState<ElementMap>({});
+  const [trimTexts, setTrimTexts] = useState<ElementMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
 
@@ -37,17 +26,59 @@ const StackManager: React.FC = () => {
 
   const resetItems = () => {
     inputs.current = [];
-    setItems(initialItems);
+    setItems([]);
     setShowSlider({});
     setSliderValue([]);
+    setShowMetadatas({});
+    setShowTrimButtons({});
+    setTrimTexts({});
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
     setSliderValue((prevValues) =>
       prevValues.map((slider) =>
-        slider.id === id ? { ...slider, values: value } : slider
-      )
+        slider.id === id ? { ...slider, values: value } : slider,
+      ),
     );
+
+    setTrimTexts((prev) => ({
+      ...prev,
+      [id]: <TrimmerText id={id} value={value}></TrimmerText>,
+    }));
+  };
+
+  const handleTrimButton = (id: string, probed: Probed) => {
+    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
+    setShowSlider((prev) => ({
+      ...prev,
+      [id]: (
+        <Trimmer
+          id={id}
+          probed={probed}
+          handleSliderChangeEnd={handleSliderChangeEnd}
+        ></Trimmer>
+      ),
+    }));
+  };
+
+  const clearSlider = (id: string) => {
+    setShowSlider((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+  };
+
+  const clearText = (id: string) => {
+    setTrimTexts((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+  };
+
+  const clearSliderValue = (id: string) => {
+    setSliderValue((prev) => prev.filter((slider) => slider.id !== id));
   };
 
   const handleFileUpload = async (id: string, file: string | string[]) => {
@@ -66,47 +97,51 @@ const StackManager: React.FC = () => {
 
     let probed: Probed = await invoke("probe", { input: path });
 
-    setSliderValue((prev) => [...prev, { id, values: [0, probed.duration] }]);
+    // Clear sliders, values & text on new upload
+    clearSlider(id);
+    clearText(id);
+    clearSliderValue(id);
 
-    setShowSlider((prev) => ({
+    setShowMetadatas((prev) => ({
+      ...prev,
+      [id]: <Metadata probed={probed}></Metadata>,
+    }));
+
+    setShowTrimButtons((prev) => ({
       ...prev,
       [id]: (
-        <Stack>
-          <RangeSlider
-            color="red"
-            mt={"xl"}
-            pos={"relative"}
-            minRange={10}
-            min={0}
-            max={probed.duration}
-            step={5}
-            label={valueLabelFormat}
-            onChangeEnd={(value) => handleSliderChangeEnd(id, value)}
-          />
-          <Group justify="center">
-            <HoverCard width={200} shadow="md">
-              <HoverCard.Target>
-                <ActionIcon
-                  variant="transparent"
-                  size="compact-xs"
-                  color="pink"
-                >
-                  <IconInfoCircle />
-                </ActionIcon>
-              </HoverCard.Target>
-              <HoverCard.Dropdown>
-                <Text size="xs" ta="center">
-                  {/* TODO: Create these through a map func */}
-                  File: {probed.filename} <br />
-                  Width: {probed.width} <br />
-                  Height: {probed.height}
-                </Text>
-              </HoverCard.Dropdown>
-            </HoverCard>
-          </Group>
-        </Stack>
+        <TrimmerButton
+          id={id}
+          probed={probed}
+          handleTrimButton={handleTrimButton}
+        ></TrimmerButton>
       ),
     }));
+  };
+
+  const handleClearButton = (id: string) => {
+    // Clear things from state first
+    clearSlider(id);
+    clearText(id);
+    clearSliderValue(id);
+
+    // Clear buttons
+    setShowMetadatas((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+
+    setShowTrimButtons((prev) => {
+      if (!(id in prev)) return prev;
+      const { [id]: removed, ...remainingItems } = prev;
+      return remainingItems;
+    });
+
+    // Remove the item from grid
+    setItems((items) => items.filter((item) => item.id !== id));
+    // Remove it from registration
+    inputs.current = inputs.current.filter((input) => input.id !== id);
   };
 
   return (
@@ -116,8 +151,12 @@ const StackManager: React.FC = () => {
       resetItems={resetItems}
       showSliders={showSliders}
       sliderValues={sliderValues}
+      trimTexts={trimTexts}
+      showMetadatas={showMetadatas}
+      showTrimButtons={showTrimButtons}
       inputs={inputs}
       handleFileUpload={handleFileUpload}
+      handleClearButton={handleClearButton}
     />
   );
 };
