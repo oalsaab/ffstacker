@@ -102,7 +102,6 @@ impl ProbedDimensions for Vec<Probed> {
     }
 
     fn is_same_dimensions(&self) -> bool {
-        self.windows(2)
-            .all(|p| (p[0].width, p[0].height) == (p[1].width, p[1].height))
+        self.is_same_width() && self.is_same_height()
     }
 }
