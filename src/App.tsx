@@ -15,9 +15,9 @@ import Metadata from "./lib/components/Metadata";
 import Stacker from "./lib/components/Stacker";
 import { Trimmer, TrimmerButton, TrimmerText } from "./lib/components/Trimmer";
 
-function clearElement(
+function clearElement<T>(
   id: string,
-  setElements: React.Dispatch<React.SetStateAction<ElementMap>>,
+  setElements: React.Dispatch<React.SetStateAction<{ [id: string]: T }>>,
 ) {
   setElements((prev) => {
     if (!(id in prev)) return prev;
@@ -36,6 +36,7 @@ function StackManager(): React.JSX.Element {
   const [processResult, setProcessResult] = useState<ProcessResult | null>(
     null,
   );
+  const [probes, setProbes] = useState<ProbedMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
   const gridRef = useRef<GridStack | null>(null);
@@ -54,6 +55,7 @@ function StackManager(): React.JSX.Element {
     setShowMetadatas({});
     setShowTrimButtons({});
     setTrimTexts({});
+    setProbes({});
     setProcessResult(null);
   };
 
@@ -102,7 +104,12 @@ function StackManager(): React.JSX.Element {
       inputs.current.push({ id, path });
     }
 
-    let probed: Probed = await invoke("probe", { input: path });
+    const probed: Probed = await invoke("probe", { input: path });
+
+    setProbes((prev) => ({
+      ...prev,
+      [id]: probed,
+    }));
 
     // Clear sliders, values & text on new upload
     clearElement(id, setShowSlider);
@@ -136,6 +143,9 @@ function StackManager(): React.JSX.Element {
     clearElement(id, setShowMetadatas);
     clearElement(id, setShowTrimButtons);
 
+    // Clear the probed value
+    clearElement(id, setProbes);
+
     // Reset the process button
     setProcessResult(null);
 
@@ -157,6 +167,7 @@ function StackManager(): React.JSX.Element {
           gridRef={gridRef}
           inputs={inputs}
           sliderValues={sliderValues}
+          probes={probes}
           processResult={processResult}
           handleProcessResult={handleProcessResult}
         />

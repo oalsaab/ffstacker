@@ -4,8 +4,8 @@ mod probing;
 mod stacking;
 
 pub use grouping::{Group, Position, Slider, Source};
-pub use probing::{Probe, Probed};
-pub use stacking::Stacker;
+pub use probing::{Probe, Probed, ProbedDimensions};
+pub use stacking::{Stack, StackIdentity, Stacker};
 
 use std::process::{Command, Stdio};
 
