@@ -102,7 +102,7 @@ impl Stacker {
             stack: primed.identify(),
             primed,
             ffmpeg: Command::new("ffmpeg"),
-            output: output.to_string(),
+            output: Stacker::create_output_path(output),
         }
     }
 
@@ -119,7 +119,7 @@ impl Stacker {
         &mut self.ffmpeg
     }
 
-    fn rand_fname(&self) -> String {
+    fn rand_fname() -> String {
         // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html
         let rand_str: String = thread_rng()
             .sample_iter(&Alphanumeric)
@@ -130,10 +130,14 @@ impl Stacker {
         format!("stacked-{}", rand_str)
     }
 
-    fn output_path(&self) -> String {
-        let mut path = PathBuf::from(self.output.clone());
-        path.push(format!("{}.mkv", self.rand_fname()));
+    fn create_output_path(output: &str) -> String {
+        let mut path = PathBuf::from(output);
+        path.push(format!("{}.mkv", Stacker::rand_fname()));
         path.to_string_lossy().into_owned()
+    }
+
+    pub fn output_path(&self) -> String {
+        self.output.clone()
     }
 }
 
