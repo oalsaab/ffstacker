@@ -44,9 +44,7 @@ fn process(
             if !probes.is_same_width() {
                 return ProcessResult {
                     status: Status::Failed,
-                    message: String::from(
-                        "Not able to process vertical stack with mismatched width",
-                    ),
+                    message: String::from("Unable to process vertical stack with mismatched width"),
                 };
             }
         }
@@ -55,7 +53,7 @@ fn process(
                 return ProcessResult {
                     status: Status::Failed,
                     message: String::from(
-                        "Not able to process horizontal stack with mismatched height",
+                        "Unable to process horizontal stack with mismatched height",
                     ),
                 };
             }
@@ -64,7 +62,7 @@ fn process(
             if !probes.is_same_dimensions() {
                 return ProcessResult {
                     status: Status::Failed,
-                    message: String::from("Not able to process X stack with mismatched dimensions"),
+                    message: String::from("Unable to process X stack with mismatched dimensions"),
                 };
             }
         }
