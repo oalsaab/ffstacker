@@ -4,12 +4,19 @@
 mod stack;
 use stack::Execution;
 
-// enum Process {
-//     Running,
-//     Complete,
-//     Failed,
-//     UserError,
-// }
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
+enum Status {
+    SUCCESS,
+    FAILED,
+}
+
+#[derive(Deserialize, Serialize)]
+struct ProcessResult {
+    status: Status,
+    message: String,
+}
 
 // Command needs to be async to handle "hanging" of GUI
 #[tauri::command(async)]
@@ -18,7 +25,7 @@ fn process(
     sources: Vec<stack::Source>,
     sliders: Vec<Option<stack::Slider>>,
     output: String,
-) -> String {
+) -> ProcessResult {
     // Clean call ensures no empty items on grid.
     let primed = stack::Group::new()
         .add(positions)
@@ -27,26 +34,26 @@ fn process(
         .clean()
         .prime();
 
+    // Debug
     println!("Calling Process stack...");
 
+    // Debug
     for item in primed.iter() {
         println!("{}", item)
     }
 
-    // Handle errs? (Wrap process in red color on failure?)
-    // Emit process to GUI?
-    let execution = stack::Stacker::new(primed, &output).execute();
+    let mut stacker = stack::Stacker::new(primed, &output);
 
-    match execution {
-        Ok(_) => {
-            println!("Success")
-        }
-        Err(err) => {
-            eprintln!("{:?}", err)
-        }
+    match stacker.execute() {
+        Ok(_) => ProcessResult {
+            status: Status::SUCCESS,
+            message: format!("Saved stacked file to: {}", stacker.output_path()),
+        },
+        Err(err) => ProcessResult {
+            status: Status::FAILED,
+            message: format!("Stacking failed due to err: {:#?}", err),
+        },
     }
-
-    "From rust".to_string()
 }
 
 #[tauri::command]

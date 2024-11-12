@@ -1,27 +1,49 @@
-import { useState, useRef } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
-import { Center } from "@mantine/core";
-import "./App.css";
-import "gridstack/dist/gridstack.min.css";
-import "gridstack/dist/gridstack-extra.min.css";
+import { Center, Group } from "@mantine/core";
 import "@mantine/core/styles.css";
-
+import { invoke } from "@tauri-apps/api/tauri";
+import { GridStack } from "gridstack";
+import "gridstack/dist/gridstack-extra.min.css";
+import "gridstack/dist/gridstack.min.css";
+import { useRef, useState } from "react";
+import "./App.css";
+import {
+  AddButton,
+  ProcessButton,
+  ResetButton,
+} from "./lib/components/ControlButtons";
+import Metadata from "./lib/components/Metadata";
 import Stacker from "./lib/components/Stacker";
 import { Trimmer, TrimmerButton, TrimmerText } from "./lib/components/Trimmer";
-import Metadata from "./lib/components/Metadata";
 
-const StackManager: React.FC = () => {
+function clearElement(
+  id: string,
+  setElements: React.Dispatch<React.SetStateAction<ElementMap>>,
+) {
+  setElements((prev) => {
+    if (!(id in prev)) return prev;
+    const { [id]: removed, ...remaining } = prev;
+    return remaining;
+  });
+}
+
+function StackManager(): React.JSX.Element {
   const [items, setItems] = useState<{ id: string }[]>([]);
   const [sliderValues, setSliderValue] = useState<SliderValues[]>([]);
   const [showSliders, setShowSlider] = useState<ElementMap>({});
   const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
   const [showTrimButtons, setShowTrimButtons] = useState<ElementMap>({});
   const [trimTexts, setTrimTexts] = useState<ElementMap>({});
+  const [processResult, setProcessResult] = useState<ProcessResult | null>(
+    null,
+  );
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
+  const gridRef = useRef<GridStack | null>(null);
 
   const addItem = () => {
     setItems([...items, { id: `${items.length + 1}` }]);
+    // Reset the process button
+    setProcessResult(null);
   };
 
   const resetItems = () => {
@@ -32,6 +54,7 @@ const StackManager: React.FC = () => {
     setShowMetadatas({});
     setShowTrimButtons({});
     setTrimTexts({});
+    setProcessResult(null);
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
@@ -61,22 +84,6 @@ const StackManager: React.FC = () => {
     }));
   };
 
-  const clearSlider = (id: string) => {
-    setShowSlider((prev) => {
-      if (!(id in prev)) return prev;
-      const { [id]: removed, ...remainingItems } = prev;
-      return remainingItems;
-    });
-  };
-
-  const clearText = (id: string) => {
-    setTrimTexts((prev) => {
-      if (!(id in prev)) return prev;
-      const { [id]: removed, ...remainingItems } = prev;
-      return remainingItems;
-    });
-  };
-
   const clearSliderValue = (id: string) => {
     setSliderValue((prev) => prev.filter((slider) => slider.id !== id));
   };
@@ -98,8 +105,8 @@ const StackManager: React.FC = () => {
     let probed: Probed = await invoke("probe", { input: path });
 
     // Clear sliders, values & text on new upload
-    clearSlider(id);
-    clearText(id);
+    clearElement(id, setShowSlider);
+    clearElement(id, setTrimTexts);
     clearSliderValue(id);
 
     setShowMetadatas((prev) => ({
@@ -121,22 +128,16 @@ const StackManager: React.FC = () => {
 
   const handleClearButton = (id: string) => {
     // Clear things from state first
-    clearSlider(id);
-    clearText(id);
+    clearElement(id, setShowSlider);
+    clearElement(id, setTrimTexts);
     clearSliderValue(id);
 
     // Clear buttons
-    setShowMetadatas((prev) => {
-      if (!(id in prev)) return prev;
-      const { [id]: removed, ...remainingItems } = prev;
-      return remainingItems;
-    });
+    clearElement(id, setShowMetadatas);
+    clearElement(id, setShowTrimButtons);
 
-    setShowTrimButtons((prev) => {
-      if (!(id in prev)) return prev;
-      const { [id]: removed, ...remainingItems } = prev;
-      return remainingItems;
-    });
+    // Reset the process button
+    setProcessResult(null);
 
     // Remove the item from grid
     setItems((items) => items.filter((item) => item.id !== id));
@@ -144,22 +145,36 @@ const StackManager: React.FC = () => {
     inputs.current = inputs.current.filter((input) => input.id !== id);
   };
 
+  const handleProcessResult = (result: ProcessResult) => {
+    setProcessResult(result);
+  };
+
   return (
-    <Stacker
-      items={items}
-      addItem={addItem}
-      resetItems={resetItems}
-      showSliders={showSliders}
-      sliderValues={sliderValues}
-      trimTexts={trimTexts}
-      showMetadatas={showMetadatas}
-      showTrimButtons={showTrimButtons}
-      inputs={inputs}
-      handleFileUpload={handleFileUpload}
-      handleClearButton={handleClearButton}
-    />
+    <div>
+      <Group justify="center">
+        <AddButton addItem={addItem} />
+        <ProcessButton
+          gridRef={gridRef}
+          inputs={inputs}
+          sliderValues={sliderValues}
+          processResult={processResult}
+          handleProcessResult={handleProcessResult}
+        />
+        <ResetButton resetItems={resetItems} />
+      </Group>
+      <Stacker
+        items={items}
+        showSliders={showSliders}
+        trimTexts={trimTexts}
+        showMetadatas={showMetadatas}
+        showTrimButtons={showTrimButtons}
+        handleFileUpload={handleFileUpload}
+        handleClearButton={handleClearButton}
+        gridRef={gridRef}
+      />
+    </div>
   );
-};
+}
 
 // App component to be called from Tauri
 const App: React.FC = () => {

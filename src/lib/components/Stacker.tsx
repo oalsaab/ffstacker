@@ -1,28 +1,30 @@
-import { useEffect, useRef, createRef, RefObject, useState } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/dialog";
-import { Button, Group, Tooltip } from "@mantine/core";
 import { GridStack } from "gridstack";
-import { IconCirclePlus, IconReload } from "@tabler/icons-react";
+import { createRef, RefObject, useEffect, useRef } from "react";
 import Item from "./Item";
-import { actionStyles } from "../styles";
-import { useDisclosure } from "@mantine/hooks";
 
-const Stacker: React.FC<StackerProps> = ({
+export interface StackerProps {
+  items: Array<{ id: string }>;
+  showSliders: ElementMap;
+  showMetadatas: ElementMap;
+  showTrimButtons: ElementMap;
+  trimTexts: ElementMap;
+  handleFileUpload: (id: string, file: string | string[]) => void;
+  handleClearButton: (id: string) => void;
+  gridRef: React.MutableRefObject<GridStack | null>;
+}
+
+export default function Stacker({
   items,
-  inputs,
   showSliders,
-  sliderValues,
   trimTexts,
   showMetadatas,
   showTrimButtons,
   handleFileUpload,
   handleClearButton,
-  addItem,
-  resetItems,
-}) => {
+  gridRef,
+}: StackerProps): React.JSX.Element {
   const refs = useRef<{ [key: string]: RefObject<HTMLDivElement> }>({});
-  const gridRef = useRef<GridStack | null>(null);
+  // const gridRef = useRef<GridStack | null>(null);
 
   // Ensure refs for items are created if they don't exist
   if (Object.keys(refs.current).length !== items.length) {
@@ -61,83 +63,8 @@ const Stacker: React.FC<StackerProps> = ({
     grid.batchUpdate(false);
   }, [items]);
 
-  const processStack = async () => {
-    const layout = gridRef.current?.save();
-
-    const selected = await open({
-      multiple: false,
-      directory: true,
-    });
-
-    if (Array.isArray(selected)) {
-      return;
-    }
-
-    if (selected && layout) {
-      let result = await invoke("process", {
-        positions: layout,
-        sources: inputs.current,
-        sliders: sliderValues,
-        output: selected,
-      });
-    }
-  };
-
-  const processButton = () => {
-    // For whatever reason this must be declared before any if conditions
-    const [loading, { open, close }] = useDisclosure();
-
-    if (inputs.current.length < 2) {
-      return (
-        <Tooltip label="A minimum of 2 inputs is required for processing!">
-          <Button
-            {...actionStyles}
-            data-disabled
-            onClick={(event) => event.preventDefault()}
-          >
-            Process
-          </Button>
-        </Tooltip>
-      );
-    }
-
-    const handleProcessStack = async () => {
-      open(); // Start loading
-      const _ = await processStack();
-      close(); // Stop loading after completion
-    };
-
-    return (
-      <Button
-        loading={loading}
-        loaderProps={{ type: "dots" }}
-        {...actionStyles}
-        onClick={handleProcessStack}
-      >
-        Process
-      </Button>
-    );
-  };
-
   return (
     <div className="controlled-container">
-      <Group justify="center">
-        <Button
-          {...actionStyles}
-          rightSection={<IconCirclePlus />}
-          onClick={addItem}
-        >
-          Add
-        </Button>
-        {processButton()}
-        <Button
-          {...actionStyles}
-          rightSection={<IconReload />}
-          onClick={resetItems}
-        >
-          Reset
-        </Button>
-      </Group>
       <div className="grid-container grid-stack controlled">
         {items.map((item) => (
           <div
@@ -162,6 +89,4 @@ const Stacker: React.FC<StackerProps> = ({
       </div>
     </div>
   );
-};
-
-export default Stacker;
+}
