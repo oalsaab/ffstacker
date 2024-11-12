@@ -33,12 +33,17 @@ function StackManager(): React.JSX.Element {
   const [showMetadatas, setShowMetadatas] = useState<ElementMap>({});
   const [showTrimButtons, setShowTrimButtons] = useState<ElementMap>({});
   const [trimTexts, setTrimTexts] = useState<ElementMap>({});
+  const [processResult, setProcessResult] = useState<ProcessResult | null>(
+    null,
+  );
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
   const gridRef = useRef<GridStack | null>(null);
 
   const addItem = () => {
     setItems([...items, { id: `${items.length + 1}` }]);
+    // Reset the process button
+    setProcessResult(null);
   };
 
   const resetItems = () => {
@@ -49,6 +54,7 @@ function StackManager(): React.JSX.Element {
     setShowMetadatas({});
     setShowTrimButtons({});
     setTrimTexts({});
+    setProcessResult(null);
   };
 
   const handleSliderChangeEnd = (id: string, value: [number, number]) => {
@@ -130,10 +136,17 @@ function StackManager(): React.JSX.Element {
     clearElement(id, setShowMetadatas);
     clearElement(id, setShowTrimButtons);
 
+    // Reset the process button
+    setProcessResult(null);
+
     // Remove the item from grid
     setItems((items) => items.filter((item) => item.id !== id));
     // Remove it from registration
     inputs.current = inputs.current.filter((input) => input.id !== id);
+  };
+
+  const handleProcessResult = (result: ProcessResult) => {
+    setProcessResult(result);
   };
 
   return (
@@ -144,6 +157,8 @@ function StackManager(): React.JSX.Element {
           gridRef={gridRef}
           inputs={inputs}
           sliderValues={sliderValues}
+          processResult={processResult}
+          handleProcessResult={handleProcessResult}
         />
         <ResetButton resetItems={resetItems} />
       </Group>

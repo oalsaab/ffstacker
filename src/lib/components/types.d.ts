@@ -14,3 +14,10 @@ interface Probed {
   width: number;
   height: number;
 }
+
+type Status = "SUCCESS" | "FAILED";
+
+interface ProcessResult {
+  status: Status;
+  message: string;
+}
