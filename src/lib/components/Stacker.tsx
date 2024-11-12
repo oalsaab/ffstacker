@@ -24,7 +24,6 @@ export default function Stacker({
   gridRef,
 }: StackerProps): React.JSX.Element {
   const refs = useRef<{ [key: string]: RefObject<HTMLDivElement> }>({});
-  // const gridRef = useRef<GridStack | null>(null);
 
   // Ensure refs for items are created if they don't exist
   if (Object.keys(refs.current).length !== items.length) {

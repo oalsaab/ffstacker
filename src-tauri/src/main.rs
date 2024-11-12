@@ -2,14 +2,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod stack;
-use stack::Execution;
 
 use serde::{Deserialize, Serialize};
+use stack::{Execution, ProbedDimensions, StackIdentity};
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "UPPERCASE")]
 enum Status {
-    SUCCESS,
-    FAILED,
+    Success,
+    Failed,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -24,6 +25,7 @@ fn process(
     positions: Vec<stack::Position>,
     sources: Vec<stack::Source>,
     sliders: Vec<Option<stack::Slider>>,
+    probes: Vec<stack::Probed>,
     output: String,
 ) -> ProcessResult {
     // Clean call ensures no empty items on grid.
@@ -33,6 +35,38 @@ fn process(
         .add_optional(sliders)
         .clean()
         .prime();
+
+    // Debug
+    println!("{:#?}", probes);
+
+    match primed.identify() {
+        stack::Stack::Vertical => {
+            if !probes.is_same_width() {
+                return ProcessResult {
+                    status: Status::Failed,
+                    message: String::from("Unable to process vertical stack with mismatched width"),
+                };
+            }
+        }
+        stack::Stack::Horizontal => {
+            if !probes.is_same_height() {
+                return ProcessResult {
+                    status: Status::Failed,
+                    message: String::from(
+                        "Unable to process horizontal stack with mismatched height",
+                    ),
+                };
+            }
+        }
+        stack::Stack::X => {
+            if !probes.is_same_dimensions() {
+                return ProcessResult {
+                    status: Status::Failed,
+                    message: String::from("Unable to process X stack with mismatched dimensions"),
+                };
+            }
+        }
+    }
 
     // Debug
     println!("Calling Process stack...");
@@ -46,11 +80,11 @@ fn process(
 
     match stacker.execute() {
         Ok(_) => ProcessResult {
-            status: Status::SUCCESS,
+            status: Status::Success,
             message: format!("Saved stacked file to: {}", stacker.output_path()),
         },
         Err(err) => ProcessResult {
-            status: Status::FAILED,
+            status: Status::Failed,
             message: format!("Stacking failed due to err: {:#?}", err),
         },
     }

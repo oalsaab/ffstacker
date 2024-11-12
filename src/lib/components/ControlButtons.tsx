@@ -24,6 +24,7 @@ export interface ProcessButtonProp {
   gridRef: React.MutableRefObject<GridStack | null>;
   inputs: React.MutableRefObject<{ id: string; path: string }[]>;
   sliderValues: SliderValues[];
+  probes: ProbedMap;
   processResult: ProcessResult | null;
   handleProcessResult: (result: ProcessResult) => void;
 }
@@ -73,6 +74,7 @@ export function ProcessButton({
   gridRef,
   inputs,
   sliderValues,
+  probes,
   processResult,
   handleProcessResult,
 }: ProcessButtonProp): React.JSX.Element {
@@ -102,6 +104,7 @@ export function ProcessButton({
       positions: layout,
       sources: inputs.current,
       sliders: sliderValues,
+      probes: Object.values(probes),
       output: selected,
     });
 

@@ -22,7 +22,7 @@ struct Format {
 }
 
 /// Represent output of executing FFprobe
-#[derive(Debug, Default, Serialize, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Probed {
     pub filename: String,
     pub duration: f64,
@@ -83,5 +83,25 @@ impl Execution for Probe {
             .arg("-show_streams")
             .args(["-select_streams", "v:0"])
             .arg(&self.input)
+    }
+}
+
+pub trait ProbedDimensions {
+    fn is_same_width(&self) -> bool;
+    fn is_same_height(&self) -> bool;
+    fn is_same_dimensions(&self) -> bool;
+}
+
+impl ProbedDimensions for Vec<Probed> {
+    fn is_same_width(&self) -> bool {
+        self.windows(2).all(|p| p[0].width == p[1].width)
+    }
+
+    fn is_same_height(&self) -> bool {
+        self.windows(2).all(|p| p[0].height == p[1].height)
+    }
+
+    fn is_same_dimensions(&self) -> bool {
+        self.is_same_width() && self.is_same_height()
     }
 }

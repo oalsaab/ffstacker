@@ -1,5 +1,5 @@
-import { ActionIcon, Group, Stack, Tooltip } from "@mantine/core";
-import { IconArrowsMove, IconUpload, IconX } from "@tabler/icons-react";
+import { ActionIcon, Group, Stack } from "@mantine/core";
+import { IconArrowsMove, IconTrashX, IconUpload } from "@tabler/icons-react";
 import { open } from "@tauri-apps/api/dialog";
 import { MouseEvent } from "react";
 import { actionStyles, iconStyles } from "../styles";
@@ -48,17 +48,11 @@ export default function Item({
           </ActionIcon>
           {showTrimButton}
           {showMetadata}
-          <Tooltip label="Click to select a video file to stack">
-            <ActionIcon {...actionStyles} onClick={handler}>
-              <IconUpload {...iconStyles} />
-            </ActionIcon>
-          </Tooltip>
-          <ActionIcon
-            variant="outline"
-            color="pink"
-            onClick={() => handleClearButton(id)}
-          >
-            <IconX {...iconStyles} />
+          <ActionIcon {...actionStyles} onClick={handler}>
+            <IconUpload {...iconStyles} />
+          </ActionIcon>
+          <ActionIcon {...actionStyles} onClick={() => handleClearButton(id)}>
+            <IconTrashX {...iconStyles} />
           </ActionIcon>
         </Group>
         {showSlider}

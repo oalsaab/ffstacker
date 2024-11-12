@@ -2,6 +2,10 @@ interface ElementMap {
   [id: string]: React.JSX.Element;
 }
 
+interface ProbedMap {
+  [id: string]: Probed;
+}
+
 interface SliderValues {
   id: string;
   values: [number, number];
