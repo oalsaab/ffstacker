@@ -1,14 +1,19 @@
-import { useState, useRef } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
-import { Center } from "@mantine/core";
-import "./App.css";
-import "gridstack/dist/gridstack.min.css";
-import "gridstack/dist/gridstack-extra.min.css";
+import { Center, Group } from "@mantine/core";
 import "@mantine/core/styles.css";
-
+import { invoke } from "@tauri-apps/api/tauri";
+import { GridStack } from "gridstack";
+import "gridstack/dist/gridstack-extra.min.css";
+import "gridstack/dist/gridstack.min.css";
+import { useRef, useState } from "react";
+import "./App.css";
+import {
+  AddButton,
+  ProcessButton,
+  ResetButton,
+} from "./lib/components/ControlButtons";
+import Metadata from "./lib/components/Metadata";
 import Stacker from "./lib/components/Stacker";
 import { Trimmer, TrimmerButton, TrimmerText } from "./lib/components/Trimmer";
-import Metadata from "./lib/components/Metadata";
 
 const StackManager: React.FC = () => {
   const [items, setItems] = useState<{ id: string }[]>([]);
@@ -19,6 +24,7 @@ const StackManager: React.FC = () => {
   const [trimTexts, setTrimTexts] = useState<ElementMap>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
+  const gridRef = useRef<GridStack | null>(null);
 
   const addItem = () => {
     setItems([...items, { id: `${items.length + 1}` }]);
@@ -145,19 +151,27 @@ const StackManager: React.FC = () => {
   };
 
   return (
-    <Stacker
-      items={items}
-      addItem={addItem}
-      resetItems={resetItems}
-      showSliders={showSliders}
-      sliderValues={sliderValues}
-      trimTexts={trimTexts}
-      showMetadatas={showMetadatas}
-      showTrimButtons={showTrimButtons}
-      inputs={inputs}
-      handleFileUpload={handleFileUpload}
-      handleClearButton={handleClearButton}
-    />
+    <div>
+      <Group justify="center">
+        <AddButton addItem={addItem} />
+        <ProcessButton
+          gridRef={gridRef}
+          inputs={inputs}
+          sliderValues={sliderValues}
+        />
+        <ResetButton resetItems={resetItems} />
+      </Group>
+      <Stacker
+        items={items}
+        showSliders={showSliders}
+        trimTexts={trimTexts}
+        showMetadatas={showMetadatas}
+        showTrimButtons={showTrimButtons}
+        handleFileUpload={handleFileUpload}
+        handleClearButton={handleClearButton}
+        gridRef={gridRef}
+      />
+    </div>
   );
 };
 

@@ -2,7 +2,11 @@ import { ActionIcon, Group, HoverCard, Text } from "@mantine/core";
 import { IconFileInfo } from "@tabler/icons-react";
 import { actionStyles, iconStyles } from "../styles";
 
-const Metadata: React.FC<MetadataProps> = ({ probed }) => {
+interface MetadataProps {
+  probed: Probed;
+}
+
+export default function Metadata({ probed }: MetadataProps): React.JSX.Element {
   return (
     <Group justify="center">
       <HoverCard shadow="md">
@@ -21,6 +25,4 @@ const Metadata: React.FC<MetadataProps> = ({ probed }) => {
       </HoverCard>
     </Group>
   );
-};
-
-export default Metadata;
+}
