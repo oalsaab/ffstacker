@@ -2,8 +2,8 @@ interface ElementMap {
   [id: string]: React.JSX.Element;
 }
 
-interface ProbedMap {
-  [id: string]: Probed;
+interface ProbeResults {
+  [id: string]: ProbeResult;
 }
 
 interface SliderValues {
@@ -24,4 +24,10 @@ type Status = "SUCCESS" | "FAILED";
 interface ProcessResult {
   status: Status;
   message: string;
+}
+
+interface ProbeResult {
+  status: Status;
+  message: string;
+  probed: Probed;
 }
