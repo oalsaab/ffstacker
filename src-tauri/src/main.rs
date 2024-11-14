@@ -3,6 +3,7 @@
 
 mod stack;
 
+use log::debug;
 use serde::{Deserialize, Serialize};
 use stack::{Execution, ProbedDimensions, StackIdentity};
 
@@ -43,8 +44,7 @@ fn process(
         .clean()
         .prime();
 
-    // Debug
-    println!("{:#?}", probes);
+    debug!("Probes: {:#?}", probes);
 
     match primed.identify() {
         stack::Stack::Vertical => {
@@ -75,15 +75,8 @@ fn process(
         }
     }
 
-    // Debug
-    println!("Calling Process stack...");
-
-    // Debug
-    for item in primed.iter() {
-        println!("{}", item)
-    }
-
     let mut stacker = stack::Stacker::new(primed, &output);
+    debug!("Stacker CMD: {}", stacker);
 
     match stacker.execute() {
         Ok(_) => ProcessResult {
@@ -99,7 +92,7 @@ fn process(
 
 #[tauri::command]
 fn probe(input: String) -> ProbeResult {
-    println!("Input received: {}", input);
+    debug!("Input: {}", input);
 
     match stack::Probe::new(&input).execute() {
         Ok(stdout) => match stack::Probed::build(&stdout) {
@@ -123,6 +116,7 @@ fn probe(input: String) -> ProbeResult {
 }
 
 fn main() {
+    env_logger::init();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![process, probe])
         .run(tauri::generate_context!())

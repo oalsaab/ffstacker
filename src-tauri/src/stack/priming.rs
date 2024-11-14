@@ -24,10 +24,13 @@ pub struct Primed {
 
 impl fmt::Display for Primed {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let fmt_ts = |dur: Option<u32>| dur.map(|v| v.as_ts()).unwrap_or(String::from("Not set"));
+        let (start, end) = (fmt_ts(self.start), fmt_ts(self.end));
+
         write!(
             f,
-            "Id: {} | x: {}, y: {} | path: {} | start: {:?}, end: {:?}",
-            self.id, self.x, self.y, self.path, self.start, self.end
+            "Id: {} | x: {}, y: {} | path: {} | start: {}, end: {}",
+            self.id, self.x, self.y, self.path, start, end
         )
     }
 }
