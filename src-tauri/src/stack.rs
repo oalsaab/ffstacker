@@ -7,6 +7,7 @@ pub use grouping::{Group, Position, Slider, Source};
 pub use probing::{Probe, Probed, ProbedDimensions};
 pub use stacking::{Stack, StackIdentity, Stacker};
 
+use log::error;
 use std::process::{Command, Stdio};
 
 #[derive(Debug)]
@@ -34,31 +35,29 @@ pub trait Execution {
         };
 
         let output = match ff.spawn() {
-            Ok(child) => child.wait_with_output(),
+            Ok(child) => match child.wait_with_output() {
+                Ok(out) => out,
+                Err(e) => {
+                    error!("Failed to wait on child: {e}");
+                    return Err(ExecuteError::OutputWait);
+                }
+            },
             Err(e) => {
-                eprintln!("Spawning command failed: {e}");
+                error!("Spawning command failed: {e}");
                 return Err(ExecuteError::Spawn);
             }
         };
 
-        let out = match output {
-            Ok(out) => out,
-            Err(e) => {
-                eprintln!("Failed to wait on child: {e}");
-                return Err(ExecuteError::OutputWait);
-            }
-        };
-
-        match out.status.success() {
-            true => Ok(out.stdout),
+        match output.status.success() {
+            true => Ok(output.stdout),
             false => {
-                let code = out
+                let code = output
                     .status
                     .code()
                     .map(|f| f.to_string())
                     .unwrap_or(String::from("unknown"));
 
-                eprintln!("Command failed with code: {}", code);
+                error!("Command failed with code: {}", code);
                 Err(ExecuteError::Execution)
             }
         }
