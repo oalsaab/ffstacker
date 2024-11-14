@@ -24,7 +24,7 @@ export interface ProcessButtonProp {
   gridRef: React.MutableRefObject<GridStack | null>;
   inputs: React.MutableRefObject<{ id: string; path: string }[]>;
   sliderValues: SliderValues[];
-  probes: ProbedMap;
+  probes: ProbeResults;
   processResult: ProcessResult | null;
   handleProcessResult: (result: ProcessResult) => void;
 }
@@ -70,6 +70,25 @@ function statusDisplay(result: ProcessResult | null) {
   }
 }
 
+function DisableProcess({ label }: { label: string }): React.JSX.Element {
+  return (
+    <Tooltip
+      label={label}
+      transitionProps={{ transition: "fade-up", duration: 300 }}
+      color="gray"
+    >
+      <Button
+        {...actionStyles}
+        data-disabled
+        onClick={(event) => event.preventDefault()}
+        rightSection={<IconPlayerPlay />}
+      >
+        Process
+      </Button>
+    </Tooltip>
+  );
+}
+
 export function ProcessButton({
   gridRef,
   inputs,
@@ -80,6 +99,16 @@ export function ProcessButton({
 }: ProcessButtonProp): React.JSX.Element {
   // For whatever reason this must be declared before any if conditions
   const [loading, { open, close }] = useDisclosure();
+
+  if (inputs.current.length < 2) {
+    const label = "A minimum of 2 inputs is required for processing!";
+    return <DisableProcess label={label} />;
+  }
+
+  if (Object.values(probes).some((result) => result.status === "FAILED")) {
+    const label = "Can't process stack with failed probes, clear them first!";
+    return <DisableProcess label={label} />;
+  }
 
   const processStack = async (): Promise<ProcessResult> => {
     const layout = gridRef.current?.save();
@@ -100,35 +129,18 @@ export function ProcessButton({
       };
     }
 
+    const probeValues = Object.values(probes).map((result) => result.probed);
+
     let result: ProcessResult = await TauriInvoke("process", {
       positions: layout,
       sources: inputs.current,
       sliders: sliderValues,
-      probes: Object.values(probes),
+      probes: probeValues,
       output: selected,
     });
 
     return result;
   };
-
-  if (inputs.current.length < 2) {
-    return (
-      <Tooltip
-        label="A minimum of 2 inputs is required for processing!"
-        transitionProps={{ transition: "fade-up", duration: 300 }}
-        color="gray"
-      >
-        <Button
-          {...actionStyles}
-          data-disabled
-          onClick={(event) => event.preventDefault()}
-          rightSection={<IconPlayerPlay />}
-        >
-          Process
-        </Button>
-      </Tooltip>
-    );
-  }
 
   const handleProcessStack = async () => {
     open(); // Start loading

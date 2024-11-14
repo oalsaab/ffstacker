@@ -19,6 +19,13 @@ struct ProcessResult {
     message: String,
 }
 
+#[derive(Deserialize, Serialize)]
+struct ProbeResult {
+    status: Status,
+    message: String,
+    probed: stack::Probed,
+}
+
 // Command needs to be async to handle "hanging" of GUI
 #[tauri::command(async)]
 fn process(
@@ -83,30 +90,35 @@ fn process(
             status: Status::Success,
             message: format!("Saved stacked file to: {}", stacker.output_path()),
         },
-        Err(err) => ProcessResult {
+        Err(e) => ProcessResult {
             status: Status::Failed,
-            message: format!("Stacking failed due to err: {:#?}", err),
+            message: format!("Stacking failed: {:#?}", e),
         },
     }
 }
 
 #[tauri::command]
-fn probe(input: String) -> stack::Probed {
+fn probe(input: String) -> ProbeResult {
     println!("Input received: {}", input);
 
-    // Using default is misleading GUI frontend on any errs?
     match stack::Probe::new(&input).execute() {
         Ok(stdout) => match stack::Probed::build(&stdout) {
-            Ok(probed) => probed,
-            Err(e) => {
-                eprintln!("Failed to build probed output: {e}");
-                stack::Probed::default()
-            }
+            Ok(probed) => ProbeResult {
+                status: Status::Success,
+                message: String::from("Succesful probe"),
+                probed,
+            },
+            Err(e) => ProbeResult {
+                status: Status::Failed,
+                message: format!("Failed probing: {}", e),
+                probed: stack::Probed::default(),
+            },
         },
-        Err(_) => {
-            eprintln!("Failed to execute FFprobe");
-            stack::Probed::default()
-        }
+        Err(e) => ProbeResult {
+            status: Status::Failed,
+            message: format!("Failed executing FFprobe: {:#?}", e),
+            probed: stack::Probed::default(),
+        },
     }
 }
 

@@ -36,7 +36,7 @@ function StackManager(): React.JSX.Element {
   const [processResult, setProcessResult] = useState<ProcessResult | null>(
     null,
   );
-  const [probes, setProbes] = useState<ProbedMap>({});
+  const [probes, setProbes] = useState<ProbeResults>({});
 
   const inputs = useRef<{ id: string; path: string }[]>([]);
   const gridRef = useRef<GridStack | null>(null);
@@ -104,11 +104,11 @@ function StackManager(): React.JSX.Element {
       inputs.current.push({ id, path });
     }
 
-    const probed: Probed = await invoke("probe", { input: path });
+    const result: ProbeResult = await invoke("probe", { input: path });
 
     setProbes((prev) => ({
       ...prev,
-      [id]: probed,
+      [id]: result,
     }));
 
     // Clear sliders, values & text on new upload
@@ -118,19 +118,21 @@ function StackManager(): React.JSX.Element {
 
     setShowMetadatas((prev) => ({
       ...prev,
-      [id]: <Metadata probed={probed}></Metadata>,
+      [id]: <Metadata probeResult={result}></Metadata>,
     }));
 
-    setShowTrimButtons((prev) => ({
-      ...prev,
-      [id]: (
-        <TrimmerButton
-          id={id}
-          probed={probed}
-          handleTrimButton={handleTrimButton}
-        ></TrimmerButton>
-      ),
-    }));
+    if (result.status === "SUCCESS") {
+      setShowTrimButtons((prev) => ({
+        ...prev,
+        [id]: (
+          <TrimmerButton
+            id={id}
+            probed={result.probed}
+            handleTrimButton={handleTrimButton}
+          ></TrimmerButton>
+        ),
+      }));
+    }
   };
 
   const handleClearButton = (id: string) => {
