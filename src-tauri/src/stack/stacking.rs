@@ -111,7 +111,7 @@ impl Stacker {
             // Range sliders enforces that start and end always exist together
             if let (Some(start), Some(end)) = (prime.start, prime.end) {
                 self.ffmpeg.args(["-ss", &start.as_ts()]);
-                self.ffmpeg.args(["to", &end.as_ts()]);
+                self.ffmpeg.args(["-to", &end.as_ts()]);
             }
             self.ffmpeg.args(["-i", &prime.path]);
         }
@@ -221,6 +221,8 @@ mod tests {
                 x: 0,
                 y: 1,
                 path: "1.mov".to_string(),
+                start: Some(10),
+                end: Some(30),
                 ..Default::default()
             },
             Primed {
@@ -260,6 +262,35 @@ mod tests {
         assert_eq!(xstack().identify(), Stack::X);
     }
 
-    // Generate tests for what the args contain when you get correct output...
-    // ...get_args().collect() --> Vec<OsStr> ... assert_eq(args, &["...", "..."])
+    #[test]
+    fn it_assembles() {
+        let mut stacker = Stacker::new(xstack(), "videos");
+        let mut result: Vec<&OsStr> = stacker.assemble().get_args().collect();
+
+        // Last item (output) is created with rand suffix
+        let last = result.pop();
+        assert!(last
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .starts_with("videos/stacked-"));
+
+        assert_eq!(
+            result,
+            [
+                "-i",
+                "2.mov",
+                "-ss",
+                "00:00:10",
+                "-to",
+                "00:00:30",
+                "-i",
+                "1.mov",
+                "-filter_complex",
+                "[0:v][1:v]xstack=inputs=2:layout=\'0_0|0_h0\'[v]",
+                "-map",
+                "[v]"
+            ]
+        );
+    }
 }
