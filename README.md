@@ -1,7 +1,12 @@
-# Tauri + React + Typescript
+## FFstacker
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+An extremely overengineered and overcomplicated approach to wrapping ffmpeg's video stacking commands in a GUI (Tauri).
 
-## Recommended IDE Setup
+Why? Somewhat a learning project.
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### Installation
+
+Clone & [Tauri build](https://v1.tauri.app/v1/guides/building/)
+
+
+![](assets/stacker.png)
