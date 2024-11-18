@@ -1,8 +1,8 @@
 [package]
 name = "ffstacker"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A overengineered approach to using FFmpeg's video stacking commands"
+authors = ["https://github.com/oalsaab"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
