@@ -13,7 +13,6 @@ pub trait StackIdentity {
     fn identify(&self) -> Stack;
 }
 
-// Trait extension for learning purposes to see learn it's capabilities
 impl StackIdentity for Vec<Primed> {
     fn identify(&self) -> Stack {
         if self.iter().all(|item| item.x == 0) {
@@ -111,7 +110,7 @@ impl Stacker {
             // Range sliders enforces that start and end always exist together
             if let (Some(start), Some(end)) = (prime.start, prime.end) {
                 self.ffmpeg.args(["-ss", &start.as_ts()]);
-                self.ffmpeg.args(["to", &end.as_ts()]);
+                self.ffmpeg.args(["-to", &end.as_ts()]);
             }
             self.ffmpeg.args(["-i", &prime.path]);
         }
@@ -185,48 +184,71 @@ impl fmt::Display for Stacker {
 mod tests {
     use super::*;
 
+    // | 1.mov |
+    // | 2.mov |
     fn vstack() -> Vec<Primed> {
         vec![
             Primed {
                 x: 0,
                 y: 0,
+                path: String::from("1.mov"),
                 ..Default::default()
             },
             Primed {
                 x: 0,
                 y: 1,
+                path: String::from("2.mov"),
                 ..Default::default()
             },
         ]
     }
 
+    // | 1.mov | 2.mov |
     fn hstack() -> Vec<Primed> {
         vec![
             Primed {
                 x: 0,
                 y: 0,
+                path: String::from("1.mov"),
                 ..Default::default()
             },
             Primed {
                 x: 1,
                 y: 0,
+                path: String::from("2.mov"),
                 ..Default::default()
             },
         ]
     }
 
+    // | 1.mov | 3.mov |
+    // | 2.mov | 4.mov |
     fn xstack() -> Vec<Primed> {
         vec![
             Primed {
                 x: 0,
+                y: 0,
+                path: String::from("1.mov"),
+                start: Some(10),
+                end: Some(30),
+                ..Default::default()
+            },
+            Primed {
+                x: 0,
                 y: 1,
-                path: "1.mov".to_string(),
+                path: String::from("2.mov"),
                 ..Default::default()
             },
             Primed {
                 x: 1,
                 y: 0,
-                path: "2.mov".to_string(),
+                path: String::from("3.mov"),
+                ..Default::default()
+            },
+            Primed {
+                x: 1,
+                y: 1,
+                path: String::from("4.mov"),
                 ..Default::default()
             },
         ]
@@ -260,6 +282,39 @@ mod tests {
         assert_eq!(xstack().identify(), Stack::X);
     }
 
-    // Generate tests for what the args contain when you get correct output...
-    // ...get_args().collect() --> Vec<OsStr> ... assert_eq(args, &["...", "..."])
+    #[test]
+    fn it_assembles() {
+        let mut stacker = Stacker::new(xstack(), "videos");
+        let mut result: Vec<&OsStr> = stacker.assemble().get_args().collect();
+
+        // Last item (output) is created with rand suffix
+        let last = result.pop();
+        assert!(last
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .starts_with("videos/stacked-"));
+
+        assert_eq!(
+            result,
+            [
+                "-ss",
+                "00:00:10",
+                "-to",
+                "00:00:30",
+                "-i",
+                "1.mov",
+                "-i",
+                "3.mov",
+                "-i",
+                "2.mov",
+                "-i",
+                "4.mov",
+                "-filter_complex",
+                "[0:v][1:v][2:v][3:v]xstack=inputs=4:layout=\'0_0|w0_0|0_h0|w0_h0\'[v]",
+                "-map",
+                "[v]"
+            ]
+        );
+    }
 }

@@ -105,3 +105,66 @@ impl ProbedDimensions for Vec<Probed> {
         self.is_same_width() && self.is_same_height()
     }
 }
+
+// Test that dimensions work as expected
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::OsStr;
+
+    #[test]
+    fn it_assembles() {
+        let mut probe = Probe::new("videos/1.mov");
+        let result: Vec<&OsStr> = probe.assemble().get_args().collect();
+
+        assert_eq!(
+            result,
+            [
+                "-v",
+                "quiet",
+                "-print_format",
+                "json",
+                "-show_format",
+                "-show_streams",
+                "-select_streams",
+                "v:0",
+                "videos/1.mov"
+            ]
+        )
+    }
+
+    #[test]
+    fn it_is_same_dimensions() {
+        let probed: Vec<Probed> = (1..3)
+            .map(|_| Probed {
+                height: 420,
+                width: 690,
+                ..Default::default()
+            })
+            .collect();
+
+        assert!(probed.is_same_width());
+        assert!(probed.is_same_height());
+        assert!(probed.is_same_dimensions());
+    }
+
+    #[test]
+    fn it_is_diff_dimensions() {
+        let probed = vec![
+            Probed {
+                height: 50,
+                width: 75,
+                ..Default::default()
+            },
+            Probed {
+                height: 51,
+                width: 76,
+                ..Default::default()
+            },
+        ];
+
+        assert!(!probed.is_same_width());
+        assert!(!probed.is_same_height());
+        assert!(!probed.is_same_dimensions());
+    }
+}
