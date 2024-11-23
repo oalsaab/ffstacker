@@ -6,7 +6,9 @@ Why? Somewhat a learning project.
 
 ### Installation
 
-Clone & [Tauri build](https://v1.tauri.app/v1/guides/building/)
+Clone & [Tauri build](https://v1.tauri.app/v1/guides/building/).
+
+Requires FFprobe & FFmpeg installed to work.
 
 
 ![](assets/stacker.png)
